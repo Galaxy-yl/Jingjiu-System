@@ -1,0 +1,41 @@
+{
+  "name": "劲酒配送管家",
+  "short_name": "劲酒配送",
+  "description": "劲酒终端片区配送、送货进度与收款对账工作台",
+  "start_url": "/peisong.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f8fafc",
+  "theme_color": "#0e7490",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "劲酒配送工作台",
+      "short_name": "工作台",
+      "description": "劲酒终端主操作页",
+      "url": "/peisong.html",
+      "icons": [{ "src": "icon.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "今日需送货",
+      "short_name": "今日送货",
+      "url": "/today-delivery.html",
+      "icons": [{ "src": "icon.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}

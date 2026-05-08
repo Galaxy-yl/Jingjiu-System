@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
+    <title>待转商家 · 劲酒配送管家</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta name="theme-color" content="#0e7490">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="劲酒配送">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="css/app-shell.css">
+    <link rel="stylesheet" href="css/page-decor.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        .bg-primary-500 {
+            background-color: #1a73e8;
+        }
+        .text-primary-600 {
+            color: #1a73e8;
+        }
+        .hover:bg-primary-600:hover {
+            background-color: #174ea6;
+        }
+        .bg-primary-50 {
+            background-color: #e8f0fe;
+        }
+        .text-danger {
+            color: #e53935;
+        }
+        .bg-danger {
+            background-color: #e53935;
+        }
+        .hover:bg-danger:hover {
+            background-color: #c62828;
+        }
+        .text-warning {
+            color: #ed6c02;
+        }
+        .bg-warning {
+            background-color: #ed6c02;
+        }
+        .hover:bg-warning:hover {
+            background-color: #e65100;
+        }
+        .text-success {
+            color: #2e7d32;
+        }
+        .bg-success {
+            background-color: #2e7d32;
+        }
+        .hover:bg-success:hover {
+            background-color: #1b5e20;
+        }
+        @media (max-width: 900px) {
+            #transferList .app-table-scroll {
+                overflow-x: visible;
+            }
+            #transferList .app-table {
+                min-width: 100%;
+                table-layout: fixed;
+            }
+            #transferList .app-table thead th,
+            #transferList .app-table tbody td {
+                padding: 8px 6px;
+                font-size: 12px;
+                word-break: break-all;
+            }
+            #transferList .row-actions {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+            #transferList .row-actions button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen app-body-bg no-page-decor">
+    <header class="app-topbar sticky top-0 z-40 text-white">
+        <div class="max-w-7xl mx-auto px-3 sm:px-4 py-3.5 flex items-center gap-3">
+            <button type="button" onclick="goBack()" class="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-xl hover:bg-white/15 transition-colors shrink-0" aria-label="返回">
+                <i class="fas fa-arrow-left text-lg"></i>
+            </button>
+            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20">
+                <i class="fas fa-exchange-alt text-sm"></i>
+            </span>
+            <h1 class="text-lg font-bold truncate">待转商家</h1>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        <div class="app-panel p-4 mb-5">
+            <label class="block text-sm font-medium text-slate-600 mb-2"><i class="fas fa-search mr-1 text-cyan-600"></i> 搜索</label>
+            <input type="search" id="transferSearch" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/35 focus:border-cyan-400" placeholder="商家名称、联系人或电话" autocomplete="off">
+            <p class="text-xs text-gray-500 mt-2">待转开始日早于今日的会<span class="text-red-600 font-medium">标红</span>提醒。</p>
+        </div>
+        <!-- 待转商家列表 -->
+        <div id="transferList">
+            <div class="text-center py-12 text-gray-500">
+                <i class="fas fa-exchange-alt text-6xl mb-4 opacity-30"></i>
+                <p>暂无待转商家</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/mian1-shared.js"></script>
+    <script>
+        const API_BASE_URL = Mian1.getApiBase();
+        let cachedTransferStores = [];
+
+        function applyTransferSearch() {
+            const el = document.getElementById('transferSearch');
+            const q = el ? el.value : '';
+            renderTransferStores(Mian1.filterStoresBySearch(cachedTransferStores, q));
+        }
+        
+        // 获取URL参数
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                area: params.get('area') || 'A',
+                date: params.get('date') || ''
+            };
+        }
+        
+        // 获取商家数据
+        async function getStores() {
+            const { area, date } = getUrlParams();
+            const today = new Date().toISOString().split('T')[0];
+            const isHistory = !!(date && date !== today);
+
+            let stores = [];
+            if (isHistory) {
+                stores = await Mian1.getBestSnapshot(date);
+            } else {
+                const response = await fetch(`${API_BASE_URL}/merchants`);
+                stores = await response.json();
+            }
+
+            if (area && area !== 'all') {
+                stores = stores.filter(store => store.area === area);
+            }
+            return stores;
+        }
+        
+        // 计算日期差
+        function getDaysDifference(date1, date2) {
+            const d1 = new Date(date1);
+            const d2 = new Date(date2);
+            const diffTime = Math.abs(d2 - d1);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
+
+        // 格式化日期
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('zh-CN');
+        }
+
+        function showHistoryReadonlyMessage() {
+            const { date } = getUrlParams();
+            alert(`当前查看的是 ${date} 的历史数据，只能查看，不能修改。`);
+        }
+
+        // 加载待转商家列表
+        async function loadTransferStores() {
+            const stores = await getStores();
+            const transferStores = stores.filter(s => s.isTransfer);
+            cachedTransferStores = transferStores;
+            applyTransferSearch();
+        }
+        
+        // 渲染待转商家列表
+        function renderTransferStores(stores) {
+            const listEl = document.getElementById('transferList');
+            const { date } = getUrlParams();
+            const today = new Date().toISOString().split('T')[0];
+            const viewDay = (date && date !== today) ? date : today;
+            const isMobile = window.matchMedia('(max-width: 900px)').matches;
+            
+            if (cachedTransferStores.length === 0 && stores.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <i class="fas fa-exchange-alt text-6xl mb-4 opacity-30"></i>
+                        <p>暂无待转商家</p>
+                    </div>
+                `;
+                return;
+            }
+            if (stores.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <i class="fas fa-search text-6xl mb-4 opacity-30"></i>
+                        <p>暂无匹配商家，请调整搜索关键词</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let totalTransfer = 0;
+            stores.forEach(s => { totalTransfer += parseFloat(s.transferAmount) || 0; });
+            const rows = stores.map(store => {
+                const transferAmount = parseFloat(store.transferAmount) || 0;
+                
+                const startDay = (store.transferStartDate || store.createdAt || '').toString().slice(0, 10);
+                const isStale = !!(startDay && startDay < viewDay);
+                const oldClass = isStale ? 'border-red-500 bg-red-50' : '';
+                
+                if (isMobile) {
+                    return `
+                        <tr class="${isStale ? 'is-alert' : ''}">
+                            <td>${store.name}</td>
+                            <td>¥${transferAmount.toFixed(2)}</td>
+                            <td>${startDay || '-'}</td>
+                            <td><div class="row-actions"><button onclick="markTransferred(${store.id})" class="px-2 py-1 bg-blue-600 text-white text-xs rounded">标记已转</button></div></td>
+                        </tr>
+                    `;
+                }
+                return `
+                    <tr class="${isStale ? 'is-alert' : ''}">
+                        <td>${store.name}</td>
+                        <td>${store.contact || '-'}</td>
+                        <td>${store.phone || '-'}</td>
+                        <td>${startDay || '-'}</td>
+                        <td>${store.transferRemark || '-'}</td>
+                        <td>¥${transferAmount.toFixed(2)}</td>
+                        <td><button onclick="markTransferred(${store.id})" class="px-2 py-1 bg-blue-600 text-white text-xs rounded">标记已转</button></td>
+                    </tr>
+                `;
+            }).join('');
+
+            listEl.innerHTML = `
+                <div class="app-table-wrap animate-fade-in">
+                    <div class="app-table-scroll">
+                        <table class="app-table">
+                            <thead>
+                                ${isMobile ? `
+                                <tr>
+                                    <th>商家</th>
+                                    <th>金额</th>
+                                    <th>开始日</th>
+                                    <th>操作</th>
+                                </tr>` : `
+                                <tr>
+                                    <th>商家</th>
+                                    <th>联系人</th>
+                                    <th>电话</th>
+                                    <th>待转开始日</th>
+                                    <th>备注</th>
+                                    <th>待转金额</th>
+                                    <th>操作</th>
+                                </tr>`}
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="mt-3 app-panel p-4 flex justify-between items-center">
+                    <span class="font-semibold text-slate-700">待转金额总计</span>
+                    <span class="text-xl font-bold text-blue-700">¥${totalTransfer.toFixed(2)}</span>
+                </div>
+            `;
+        }
+        
+        function mergePayMethodsTransfer(store) {
+            let m = store.paymentMethods;
+            if (typeof m === 'string') {
+                try { m = JSON.parse(m); } catch (e) { m = []; }
+            }
+            if (!Array.isArray(m)) m = [];
+            const set = new Set(m);
+            set.add('wechat');
+            return Array.from(set);
+        }
+
+        // 标记已转（金额默认计入微信，与实收统计一致）
+        async function markTransferred(id) {
+            const { date } = getUrlParams();
+            const today = new Date().toISOString().split('T')[0];
+            if (date && date !== today) return showHistoryReadonlyMessage();
+
+            const stores = await getStores();
+            const store = stores.find(s => s.id === id);
+            if (!store) return;
+            
+            const now = new Date().toISOString().split('T')[0];
+            const startDate = store.transferStartDate
+              ? String(store.transferStartDate).slice(0, 10)
+              : (store.createdAt ? String(store.createdAt).slice(0, 10) : '');
+            const paymentOrigin = startDate ? `待转（${startDate}）` : '待转';
+
+            const transferValue = parseFloat(store.transferAmount) || 0;
+            const data = {
+                ...store,
+                isTransfer: 0,
+                transferAmount: 0,
+                transferRemark: store.transferRemark || '',
+                owingAmount: 0,
+                wechatAmount: (parseFloat(store.wechatAmount) || 0) + transferValue,
+                alipayAmount: parseFloat(store.alipayAmount) || 0,
+                cardAmount: parseFloat(store.cardAmount) || 0,
+                cashAmount: parseFloat(store.cashAmount) || 0,
+                paymentDate: now,
+                paymentOrigin,
+                paymentMethods: JSON.stringify(mergePayMethodsTransfer(store))
+            };
+            
+            try {
+                const res = await fetch(`${API_BASE_URL}/merchants/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                Mian1.showToast('已标记待转完成，金额计入微信实收', 'success');
+                loadTransferStores();
+            } catch (e) {
+                console.error(e);
+                Mian1.showToast('保存失败，请检查网络与后端', 'error');
+            }
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            const se = document.getElementById('transferSearch');
+            if (se) se.addEventListener('input', applyTransferSearch);
+            loadTransferStores();
+        });
+        
+        // 返回主页
+        function goBack() {
+            Mian1.navigateBackToPeisong();
+        }
+    </script>
+    <script src="js/app-shell-init.js" defer></script>
+    <script src="js/pwa-bootstrap.js" defer></script>
+</body>
+</html>

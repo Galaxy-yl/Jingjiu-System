@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
+    <title>商家列表 · 劲酒配送管家</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta name="theme-color" content="#0e7490">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="劲酒配送">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="css/app-shell.css">
+    <link rel="stylesheet" href="css/page-decor.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#0284c7',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen app-body-bg">
+  <script src="js/page-decor-inject.js"></script>
+    <!-- 顶部导航 -->
+    <header class="app-topbar sticky top-0 z-40 text-white">
+        <div class="max-w-7xl mx-auto px-3 sm:px-4 py-3.5">
+            <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    <button type="button" onclick="goBack()" class="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-xl hover:bg-white/15 transition-colors shrink-0" aria-label="返回">
+                        <i class="fas fa-arrow-left text-lg"></i>
+                    </button>
+                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20">
+                        <i class="fas fa-store text-sm"></i>
+                    </span>
+                    <h1 class="text-lg font-bold truncate">商家列表</h1>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        <!-- 页面标题 -->
+        <div class="app-panel p-4 sm:p-6 mb-5">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700">
+                        <i class="fas fa-store text-sm"></i>
+                    </span>
+                    商家总数
+                </h2>
+                <button type="button" onclick="openAddModal()" class="inline-flex min-h-[44px] items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 text-white text-sm font-semibold shadow-md shadow-cyan-900/15 hover:from-cyan-500 hover:to-teal-500 transition-colors">
+                    <i class="fas fa-plus"></i> 新增商家
+                </button>
+            </div>
+        </div>
+
+        <div class="app-panel p-4 mb-5">
+            <label class="block text-sm font-medium text-slate-600 mb-2"><i class="fas fa-search mr-1 text-cyan-600"></i> 搜索</label>
+            <input type="search" id="storeListSearch" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-800 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/35 focus:border-cyan-400" placeholder="商家名称、联系人或电话" autocomplete="off">
+        </div>
+
+        <!-- 商家列表 -->
+        <div id="storeList">
+            <div class="text-center py-12 text-gray-500">
+                <i class="fas fa-store text-6xl mb-4 opacity-30"></i>
+                <p>暂无商家数据</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加商家模态框 -->
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden" id="storeModal">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 id="modalTitle" class="text-xl font-bold text-gray-800">添加商家</h2>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="storeForm" class="space-y-4">
+                <input type="hidden" id="editStoreId">
+                <!-- 单个添加 -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">单个添加商家</label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="min-w-0">
+                            <input type="text" id="modalStoreName" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="商家名称">
+                        </div>
+                        <div class="min-w-0">
+                            <input type="text" id="modalContact" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="联系人">
+                        </div>
+                        <div class="min-w-0">
+                            <input type="tel" id="modalPhone" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="电话">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 批量添加 -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">批量添加商家</label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="min-w-0">
+                            <label class="block text-xs text-gray-500 mb-1">商家名称（一行一个）</label>
+                            <textarea id="batchStoreNames" rows="4" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="例如：商家A
+商家B
+商家C"></textarea>
+                        </div>
+                        <div class="min-w-0">
+                            <label class="block text-xs text-gray-500 mb-1">联系人（一行一个）</label>
+                            <textarea id="batchContacts" rows="4" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="例如：张三
+李四
+王五
+（留空表示无）"></textarea>
+                        </div>
+                        <div class="min-w-0">
+                            <label class="block text-xs text-gray-500 mb-1">电话（一行一个）</label>
+                            <textarea id="batchPhones" rows="4" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="例如：13800138000
+13900139000
+13700137000
+（留空表示无）"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">备注</label>
+                    <textarea id="modalRemark" rows="3" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeModal()" class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium">
+                        取消
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium">
+                        保存
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/mian1-shared.js"></script>
+    <script>
+        const API_BASE_URL = Mian1.getApiBase();
+        let currentArea = '';
+        let cachedRegularStores = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            currentArea = urlParams.get('area') || 'A';
+            const searchEl = document.getElementById('storeListSearch');
+            if (searchEl) searchEl.addEventListener('input', () => applyStoreSearch());
+            loadStores();
+            
+            document.getElementById('storeForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveStore();
+            });
+        });
+
+        function applyStoreSearch() {
+            const el = document.getElementById('storeListSearch');
+            const q = el ? el.value : '';
+            renderStores(Mian1.filterStoresBySearch(cachedRegularStores, q));
+        }
+
+        async function getStores() {
+            const response = await fetch(`${API_BASE_URL}/merchants${currentArea && currentArea !== 'all' ? `?area=${currentArea}` : ''}`);
+            return response.json();
+        }
+
+        async function loadStores() {
+            const stores = await getStores();
+            const regularStores = stores.filter(s => !s.isTemp);
+            cachedRegularStores = regularStores;
+            applyStoreSearch();
+        }
+
+        function renderStores(stores) {
+            const listEl = document.getElementById('storeList');
+            
+            if (cachedRegularStores.length === 0 && stores.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <i class="fas fa-store text-6xl mb-4 opacity-30"></i>
+                        <p>暂无商家数据</p>
+                    </div>
+                `;
+                return;
+            }
+            if (stores.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <i class="fas fa-search text-6xl mb-4 opacity-30"></i>
+                        <p>暂无匹配商家，请调整搜索关键词</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const rows = stores.map(store => `
+                <tr>
+                    <td>${store.name}</td>
+                    <td>${store.contact || '-'}</td>
+                    <td>${store.phone || '-'}</td>
+                    <td>${store.remark || '-'}</td>
+                    <td>
+                        <div class="flex gap-2">
+                            <button onclick="editStore(${store.id})" class="px-3 py-1.5 bg-primary-500 hover:bg-primary-600 text-white text-xs font-medium rounded">
+                                编辑
+                            </button>
+                            <button onclick="deleteStore(${store.id})" class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-medium rounded">
+                                删除
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            listEl.innerHTML = `
+                <div class="app-table-wrap animate-fade-in">
+                    <div class="app-table-scroll">
+                        <table class="app-table">
+                            <thead>
+                                <tr>
+                                    <th>商家名称</th>
+                                    <th>联系人</th>
+                                    <th>电话</th>
+                                    <th>备注</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = '添加商家';
+            document.getElementById('editStoreId').value = '';
+            document.getElementById('modalStoreName').value = '';
+            document.getElementById('modalContact').value = '';
+            document.getElementById('modalPhone').value = '';
+            document.getElementById('modalRemark').value = '';
+            document.getElementById('storeModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('storeModal').classList.add('hidden');
+        }
+
+        async function saveStore() {
+            const batchNames = document.getElementById('batchStoreNames').value.trim();
+            const batchContacts = document.getElementById('batchContacts').value.trim();
+            const batchPhones = document.getElementById('batchPhones').value.trim();
+            const singleName = document.getElementById('modalStoreName').value.trim();
+            
+            if (!batchNames && !singleName) {
+                alert('请输入商家名称');
+                return;
+            }
+
+            const defaultContact = document.getElementById('modalContact').value.trim();
+            const defaultPhone = document.getElementById('modalPhone').value.trim();
+            const remark = document.getElementById('modalRemark').value.trim();
+            
+            try {
+                if (batchNames) {
+                    const names = batchNames.split('\n').filter(name => name.trim());
+                    const contacts = batchContacts ? batchContacts.split('\n') : [];
+                    const phones = batchPhones ? batchPhones.split('\n') : [];
+                    
+                    for (let i = 0; i < names.length; i++) {
+                        const storeName = names[i].trim();
+                        const storeContact = contacts[i] ? contacts[i].trim() : defaultContact;
+                        const storePhone = phones[i] ? phones[i].trim() : defaultPhone;
+                        
+                        const data = {
+                            name: storeName,
+                            contact: storeContact,
+                            phone: storePhone,
+                            remark: remark,
+                            area: currentArea,
+                            isTemp: false,
+                            needDelivery: false,
+                            delivered: 0
+                        };
+                        
+                        const res = await fetch(`${API_BASE_URL}/merchants`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+                        if (!res.ok) {
+                            throw new Error('save batch');
+                        }
+                    }
+                } else {
+                    const editId = document.getElementById('editStoreId').value;
+                    const data = {
+                        name: singleName,
+                        contact: defaultContact,
+                        phone: defaultPhone,
+                        remark: remark,
+                        area: currentArea,
+                        isTemp: false,
+                        needDelivery: false,
+                        delivered: 0
+                    };
+
+                    const url = editId ? `${API_BASE_URL}/merchants/${editId}` : `${API_BASE_URL}/merchants`;
+                    const method = editId ? 'PUT' : 'POST';
+                    
+                    const res = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    if (!res.ok) {
+                        throw new Error('save one');
+                    }
+                }
+
+                Mian1.showToast('保存成功', 'success');
+                closeModal();
+                loadStores();
+            } catch (e) {
+                console.error(e);
+                Mian1.showToast('保存失败，请检查网络与后端后重试', 'error');
+            }
+        }
+
+        async function editStore(id) {
+            const stores = await getStores();
+            const store = stores.find(s => s.id === id);
+            if (!store) return;
+            
+            document.getElementById('modalTitle').textContent = '编辑商家';
+            document.getElementById('editStoreId').value = store.id;
+            document.getElementById('modalStoreName').value = store.name;
+            document.getElementById('modalContact').value = store.contact || '';
+            document.getElementById('modalPhone').value = store.phone || '';
+            document.getElementById('modalRemark').value = store.remark || '';
+            document.getElementById('storeModal').classList.remove('hidden');
+        }
+
+        async function deleteStore(id) {
+            if (!confirm('确定要删除这个商家吗？')) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/merchants/${id}`, { method: 'DELETE' });
+                if (!res.ok) {
+                    throw new Error('delete failed');
+                }
+                Mian1.showToast('已删除', 'success');
+                loadStores();
+            } catch (e) {
+                console.error(e);
+                Mian1.showToast('删除失败，请检查网络与后端后重试', 'error');
+            }
+        }
+
+        function goBack() {
+            Mian1.navigateBackToPeisong();
+        }
+    </script>
+    <script src="js/app-shell-init.js" defer></script>
+    <script src="js/pwa-bootstrap.js" defer></script>
+</body>
+</html>

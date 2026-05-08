@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
+    <title>未送货商家 · 劲酒配送管家</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta name="theme-color" content="#0e7490">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="劲酒配送">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="css/app-shell.css">
+    <link rel="stylesheet" href="css/page-decor.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#0284c7',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        #notDeliveredList .app-table thead th {
+            font-size: 13px;
+        }
+        #notDeliveredList .app-table tbody td {
+            font-size: 14px;
+            line-height: 1.55;
+            color: #334155;
+        }
+        #notDeliveredList .app-table tbody tr:nth-child(even) {
+            background: #fafcff;
+        }
+        #notDeliveredList .app-table tbody tr:hover {
+            background: #f0f9ff;
+        }
+        #notDeliveredList .app-table tbody td:first-child {
+            min-width: 220px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+        #notDeliveredList .app-table tbody td:last-child {
+            white-space: nowrap;
+        }
+        #notDeliveredList .app-table-wrap {
+            box-shadow: 0 1px 6px rgba(15, 23, 42, 0.06);
+        }
+        @media (max-width: 900px) {
+            #notDeliveredList .app-table-scroll {
+                overflow-x: visible;
+            }
+            #notDeliveredList .app-table {
+                min-width: 100%;
+                table-layout: fixed;
+            }
+            #notDeliveredList .app-table thead th,
+            #notDeliveredList .app-table tbody td {
+                padding: 8px 6px;
+                font-size: 12px;
+            }
+            #notDeliveredList .app-table tbody td {
+                word-break: break-all;
+            }
+            #notDeliveredList .app-table tbody td:first-child {
+                min-width: 0;
+                width: 40%;
+            }
+            #notDeliveredList .row-actions {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+            #notDeliveredList .row-actions button {
+                margin-left: 0 !important;
+                width: 100%;
+            }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen app-body-bg no-page-decor">
+    <header class="app-topbar sticky top-0 z-40 text-white">
+        <div class="max-w-7xl mx-auto px-3 sm:px-4 py-3.5">
+            <div class="flex items-center gap-3 min-w-0">
+                <button type="button" onclick="goBack()" class="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-xl hover:bg-white/15 transition-colors shrink-0" aria-label="返回">
+                    <i class="fas fa-arrow-left text-lg"></i>
+                </button>
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20">
+                    <i class="fas fa-clock text-sm"></i>
+                </span>
+                <h1 class="text-lg font-bold truncate">未送货</h1>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        <div class="app-panel p-4 sm:p-6 mb-5">
+            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-800">
+                    <i class="fas fa-clock text-sm"></i>
+                </span>
+                未送货商家
+            </h2>
+        </div>
+
+        <div class="app-panel p-4 mb-5">
+            <label class="block text-sm font-medium text-slate-600 mb-2"><i class="fas fa-search mr-1 text-cyan-600"></i> 搜索</label>
+            <input type="search" id="notDeliveredSearch" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/35 focus:border-cyan-400" placeholder="商家名称、联系人或电话" autocomplete="off">
+            <p class="text-xs text-gray-500 mt-2">非当日添加且仍未送货的会<span class="text-red-600 font-medium">标红</span>提醒。</p>
+        </div>
+
+        <div id="notDeliveredList">
+            <div class="text-center py-12 text-gray-500">
+                <i class="fas fa-clock text-6xl mb-4 opacity-30"></i>
+                <p>暂无未送货商家</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/mian1-shared.js"></script>
+    <script>
+        const API_BASE_URL = Mian1.getApiBase();
+        let currentArea = '';
+        let selectedDate = '';
+        let isHistory = false;
+        let cachedNotDelivered = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            currentArea = urlParams.get('area') || 'A';
+            selectedDate = urlParams.get('date') || '';
+            const today = new Date().toISOString().split('T')[0];
+            isHistory = !!(selectedDate && selectedDate !== today);
+            const searchEl = document.getElementById('notDeliveredSearch');
+            if (searchEl) searchEl.addEventListener('input', () => applyNotDeliveredSearch());
+            loadNotDeliveredStores();
+        });
+
+        function applyNotDeliveredSearch() {
+            const el = document.getElementById('notDeliveredSearch');
+            const q = el ? el.value : '';
+            renderNotDeliveredStores(Mian1.filterStoresBySearch(cachedNotDelivered, q), q);
+        }
+
+        async function getStores() {
+            const response = await fetch(`${API_BASE_URL}/merchants${currentArea && currentArea !== 'all' ? `?area=${currentArea}` : ''}`);
+            return response.json();
+        }
+
+        function getDaysDifference(date1, date2) {
+            const d1 = new Date(date1);
+            const d2 = new Date(date2);
+            const diffTime = Math.abs(d2 - d1);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('zh-CN');
+        }
+
+        function showHistoryReadonlyMessage() {
+            alert(`当前查看的是 ${selectedDate} 的历史数据，只能查看，不能修改。`);
+        }
+
+        async function loadNotDeliveredStores() {
+            let stores = [];
+            if (isHistory) {
+                stores = await Mian1.getBestSnapshot(selectedDate);
+                if (currentArea && currentArea !== 'all') {
+                    stores = stores.filter(s => s.area === currentArea);
+                }
+            } else {
+                stores = await getStores();
+            }
+            const notDeliveredStores = stores.filter(s => s.needDelivery && !s.delivered);
+            cachedNotDelivered = notDeliveredStores;
+            applyNotDeliveredSearch();
+        }
+
+        function renderNotDeliveredStores(stores, searchQuery) {
+            const listEl = document.getElementById('notDeliveredList');
+            const viewDay = isHistory ? selectedDate : new Date().toISOString().split('T')[0];
+            const isMobile = window.matchMedia('(max-width: 900px)').matches;
+
+            if (cachedNotDelivered.length === 0 && stores.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <i class="fas fa-clock text-6xl mb-4 opacity-30"></i>
+                        <p>暂无未送货商家</p>
+                    </div>
+                `;
+                return;
+            }
+            if (stores.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <i class="fas fa-search text-6xl mb-4 opacity-30"></i>
+                        <p>暂无匹配商家，请调整搜索关键词</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const rows = stores.map(store => {
+                const createdDay = store.createdAt ? String(store.createdAt).slice(0, 10) : '';
+                const isCarryOver = !!(createdDay && createdDay < viewDay);
+                let daysDiff = 0;
+                if (isCarryOver && createdDay && viewDay) {
+                    const dc = new Date(createdDay + 'T00:00:00');
+                    const dv = new Date(viewDay + 'T00:00:00');
+                    daysDiff = Math.max(0, Math.floor((dv - dc) / (1000 * 60 * 60 * 24)));
+                }
+                const oldClass = isCarryOver ? 'border-red-500 bg-red-50' : '';
+                
+                if (isMobile) {
+                    return `
+                    <tr class="${isCarryOver ? 'is-alert' : ''}">
+                        <td>${store.name}</td>
+                        <td>${store.contact || '-'}</td>
+                        <td>${isCarryOver ? ('跨日' + (daysDiff > 0 ? (' ' + daysDiff + '天') : '')) : '当日'}</td>
+                        <td>
+                            <div class="row-actions">
+                                <button onclick="editStore(${store.id})" class="px-2 py-1 bg-primary-500 hover:bg-primary-600 text-white text-xs rounded">编辑</button>
+                                <button onclick="markAsDelivered(${store.id})" class="px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded">已送货</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                }
+                return `
+                    <tr class="${isCarryOver ? 'is-alert' : ''}">
+                        <td>${store.name}</td>
+                        <td>${store.contact || '-'}</td>
+                        <td>${store.phone || '-'}</td>
+                        <td>${isCarryOver ? ('跨日未送 ' + (daysDiff > 0 ? daysDiff + '天' : '')) : '当日'}</td>
+                        <td>${createdDay || '-'}</td>
+                        <td>${store.isOwing ? '欠账' : '-'}</td>
+                        <td>
+                            <button onclick="editStore(${store.id})" class="px-2 py-1 bg-primary-500 hover:bg-primary-600 text-white text-xs rounded">编辑</button>
+                            <button onclick="markAsDelivered(${store.id})" class="px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded ml-1">已送货</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            listEl.innerHTML = `
+                <div class="app-table-wrap animate-fade-in">
+                    <div class="app-table-scroll">
+                        <table class="app-table">
+                            <thead>
+                                ${isMobile ? `
+                                <tr>
+                                    <th>商家</th>
+                                    <th>联系人</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>` : `
+                                <tr>
+                                    <th>商家</th>
+                                    <th>联系人</th>
+                                    <th>电话</th>
+                                    <th>状态</th>
+                                    <th>添加日期</th>
+                                    <th>欠账</th>
+                                    <th>操作</th>
+                                </tr>`}
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function markAsDelivered(id) {
+            if (isHistory) return showHistoryReadonlyMessage();
+            const stores = await getStores();
+            const store = stores.find(s => s.id === id);
+            if (!store) return;
+            
+            const now = new Date().toISOString().split('T')[0];
+            const data = {
+                ...store,
+                delivered: 1,
+                deliveryDate: now,
+                needDelivery: false
+            };
+            
+            await fetch(`${API_BASE_URL}/merchants/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            loadNotDeliveredStores();
+        }
+
+        async function editStore(id) {
+            if (isHistory) return showHistoryReadonlyMessage();
+            window.location.href = `store-list.html?area=${currentArea}`;
+        }
+
+        function goBack() {
+            Mian1.navigateBackToPeisong();
+        }
+    </script>
+    <script src="js/app-shell-init.js" defer></script>
+    <script src="js/pwa-bootstrap.js" defer></script>
+</body>
+</html>

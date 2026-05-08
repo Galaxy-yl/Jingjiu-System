@@ -1,0 +1,23 @@
+/**
+ * 配送首页：整页底图由 page-decor.css 提供；无 page-decor-on 时的备用浅底
+ */
+body.peisong-mesh-bg:not(.page-decor-on) {
+  background: linear-gradient(165deg, rgba(236, 253, 245, 0.92) 0%, rgba(240, 253, 250, 0.88) 40%, rgba(255, 255, 255, 0.9) 100%);
+  background-attachment: fixed;
+}
+
+.peisong-quote-card {
+  min-height: 0;
+}
+
+/* 主内容在装饰层之上，略透底 */
+body.peisong-mesh-bg .app-panel,
+body.peisong-mesh-bg .peisong-quote-card {
+  position: relative;
+  z-index: 1;
+}
+
+body.peisong-mesh-bg .app-panel {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+}

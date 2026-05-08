@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5"/>
+  <title>配送工作台 · 劲酒配送管家</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.png">
+  <meta name="theme-color" content="#0e7490">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="劲酒配送">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="stylesheet" href="css/app-shell.css">
+  <link rel="stylesheet" href="css/peisong-showcase.css">
+  <link rel="stylesheet" href="css/page-decor.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            },
+            success: '#22c55e',
+            warning: '#f59e0b',
+            danger: '#ef4444',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @layer utilities {
+      .animate-fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+      }
+      .animate-slide-up {
+        animation: slideUp 0.3s ease-out;
+      }
+      .animate-scale-in {
+        animation: scaleIn 0.2s ease-out;
+      }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body class="min-h-screen peisong-mesh-bg">
+  <div
+    id="mian1FileProtocolBanner"
+    class="hidden fixed top-0 left-0 right-0 z-[100] bg-amber-100 border-b border-amber-300 text-amber-950 text-xs sm:text-sm px-3 py-2 text-center shadow-sm"
+  >
+    <strong>当前为本地文件打开，无法使用数据服务。</strong>请通过本机服务地址访问：
+    <a href="http://localhost:3000/peisong.html" class="underline font-semibold text-amber-900">http://localhost:3000/peisong.html</a>
+  </div>
+  <script>
+    (function () {
+      var el = document.getElementById('mian1FileProtocolBanner');
+      if (el && location.protocol === 'file:') el.classList.remove('hidden');
+    })();
+  </script>
+  <script src="js/page-decor-inject.js"></script>
+  <!-- 顶部导航 -->
+  <header class="app-topbar sticky top-0 z-40 text-white">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 py-3.5 sm:py-4">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20">
+            <i class="fas fa-truck text-lg"></i>
+          </span>
+          <div class="min-w-0">
+            <h1 class="text-base sm:text-lg md:text-xl font-bold tracking-tight truncate">劲酒 · 配送管家</h1>
+            <p class="text-[11px] sm:text-xs text-white/70 truncate">终端访销配送与对账 · 片区 · 送货 · 回款</p>
+          </div>
+        </div>
+        <div class="flex flex-col items-end gap-1.5 shrink-0">
+          <div class="text-xs sm:text-sm tabular-nums text-white/85 rounded-lg bg-white/10 px-2.5 py-1.5 ring-1 ring-white/15">
+            <span id="currentDate"></span>
+          </div>
+          <div class="flex flex-wrap justify-end gap-1.5">
+            <button type="button" onclick="showMonthlySummary()" class="min-h-[36px] inline-flex items-center gap-1 rounded-lg bg-white/15 px-2.5 py-1.5 text-[11px] sm:text-xs font-semibold text-white ring-1 ring-white/25 hover:bg-white/25 transition-colors" title="月度总结">
+              <i class="fas fa-calendar-alt opacity-90"></i><span class="hidden sm:inline">月度总结</span><span class="sm:hidden">月度</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 今日一句（manifest 的 start_url 为本页；整页背景见 page-bg-hero + page-decor.css） -->
+  <div class="max-w-7xl mx-auto px-3 sm:px-4 pt-2 sm:pt-3 peisong-top-wrap">
+    <div class="peisong-quote-card rounded-xl border border-teal-200/80 bg-gradient-to-br from-emerald-50/95 via-teal-50/85 to-cyan-50/95 px-3 py-2 sm:px-3.5 sm:py-2.5 shadow-sm ring-1 ring-teal-100/40" role="region" aria-label="今日一句">
+      <p class="text-[10px] font-semibold tracking-wide text-teal-600/90 mb-1">今日一句</p>
+      <p id="homeGreeting" class="text-xs sm:text-sm font-semibold text-slate-800 leading-snug mb-0.5"></p>
+      <p id="homeQuoteLine" class="text-xs text-slate-700 leading-snug"></p>
+      <p id="homeQuoteSub" class="text-[11px] text-slate-500 mt-1 leading-snug"></p>
+    </div>
+  </div>
+
+  <!-- 片区选择和日期选择 -->
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+    <div class="app-panel p-4 sm:p-6 mb-4 sm:mb-6 animate-fade-in">
+      <h2 class="text-base sm:text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+        <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-100 text-cyan-700">
+          <i class="fas fa-map-marker-alt text-sm"></i>
+        </span>
+        选择片区和日期
+      </h2>
+      <div class="flex flex-wrap gap-2 sm:gap-2.5 mb-5">
+        <button type="button" class="area-btn inline-flex min-h-[44px] items-center justify-center px-3 py-2 sm:px-5 rounded-full text-sm font-semibold border border-slate-200 bg-white text-slate-600 shadow-sm hover:border-cyan-300 hover:bg-cyan-50/90 transition-all duration-200" data-area="all">
+          <i class="fas fa-map-pin mr-1.5 opacity-80"></i>全部片区
+        </button>
+        <button type="button" class="area-btn inline-flex min-h-[44px] items-center justify-center px-3 py-2 sm:px-5 rounded-full text-sm font-semibold border border-slate-200 bg-white text-slate-600 shadow-sm hover:border-cyan-300 hover:bg-cyan-50/90 transition-all duration-200" data-area="A">
+          <i class="fas fa-map-pin mr-1.5 opacity-80"></i>片区 A
+        </button>
+        <button type="button" class="area-btn inline-flex min-h-[44px] items-center justify-center px-3 py-2 sm:px-5 rounded-full text-sm font-semibold border border-slate-200 bg-white text-slate-600 shadow-sm hover:border-cyan-300 hover:bg-cyan-50/90 transition-all duration-200" data-area="B">
+          <i class="fas fa-map-pin mr-1.5 opacity-80"></i>片区 B
+        </button>
+        <button type="button" class="area-btn inline-flex min-h-[44px] items-center justify-center px-3 py-2 sm:px-5 rounded-full text-sm font-semibold border border-slate-200 bg-white text-slate-600 shadow-sm hover:border-cyan-300 hover:bg-cyan-50/90 transition-all duration-200" data-area="C">
+          <i class="fas fa-map-pin mr-1.5 opacity-80"></i>片区 C
+        </button>
+      </div>
+      <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+          <label class="text-sm font-medium text-slate-600 shrink-0">选择日期</label>
+          <input type="date" id="statsDate" class="min-h-[44px] w-full sm:min-w-[11rem] sm:max-w-xs sm:flex-1 px-3 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-800 text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-400">
+        </div>
+        <div class="flex flex-wrap gap-2 items-stretch">
+          <button type="button" id="queryButton" class="inline-flex min-h-[44px] flex-1 sm:flex-initial items-center justify-center px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 text-white text-sm font-semibold shadow-md shadow-cyan-900/15 hover:from-cyan-500 hover:to-teal-500 transition-colors min-w-[7rem]">
+            <i class="fas fa-search mr-2"></i> 查询
+          </button>
+          <button type="button" onclick="showMonthlySummary()" class="inline-flex min-h-[44px] flex-1 sm:flex-initial items-center justify-center gap-2 px-3 py-2.5 rounded-xl border-2 border-teal-200 bg-teal-50 text-teal-900 text-sm font-semibold hover:bg-teal-100 min-w-[7rem]">
+            <i class="fas fa-calendar-alt text-teal-600"></i> 月度总结
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div id="mainContent" class="hidden">
+      <!-- 统计仪表盘 -->
+      <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
+        <div data-stat="total" class="dashboard-card app-stat-card cursor-pointer rounded-2xl border border-slate-100 bg-white p-4 sm:p-5 shadow-sm animate-slide-up">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-slate-500 text-[10px] sm:text-xs font-medium uppercase tracking-wide leading-tight">商家总数</p>
+              <p id="statTotal" class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 tabular-nums mt-0.5">0</p>
+            </div>
+            <div class="w-10 h-10 sm:w-12 lg:w-14 shrink-0 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center shadow-inner">
+              <i class="fas fa-store text-slate-600 text-xl"></i>
+            </div>
+          </div>
+        </div>
+        <div data-stat="today" class="dashboard-card app-stat-card cursor-pointer rounded-2xl border border-slate-100 bg-white p-4 sm:p-5 shadow-sm animate-slide-up" style="animation-delay: 0.1s;">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-slate-500 text-[10px] sm:text-xs font-medium uppercase tracking-wide leading-tight">今日需送货</p>
+              <p id="statNeedDelivery" class="text-xl sm:text-2xl lg:text-3xl font-bold text-cyan-600 tabular-nums mt-0.5">0</p>
+            </div>
+            <div class="w-10 h-10 sm:w-12 lg:w-14 shrink-0 rounded-2xl bg-gradient-to-br from-cyan-100 to-cyan-200 flex items-center justify-center shadow-inner">
+              <i class="fas fa-calendar-check text-cyan-700 text-xl"></i>
+            </div>
+          </div>
+        </div>
+        <div data-stat="delivered" class="dashboard-card app-stat-card cursor-pointer rounded-2xl border border-slate-100 bg-white p-4 sm:p-5 shadow-sm animate-slide-up" style="animation-delay: 0.2s;">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-slate-500 text-[10px] sm:text-xs font-medium uppercase tracking-wide leading-tight">已送货</p>
+              <p id="statDelivered" class="text-xl sm:text-2xl lg:text-3xl font-bold text-emerald-600 tabular-nums mt-0.5">0</p>
+            </div>
+            <div class="w-10 h-10 sm:w-12 lg:w-14 shrink-0 rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center shadow-inner">
+              <i class="fas fa-check-circle text-emerald-700 text-xl"></i>
+            </div>
+          </div>
+        </div>
+        <div data-stat="notDelivered" class="dashboard-card app-stat-card cursor-pointer rounded-2xl border border-slate-100 bg-white p-4 sm:p-5 shadow-sm animate-slide-up" style="animation-delay: 0.2s;">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-slate-500 text-[10px] sm:text-xs font-medium uppercase tracking-wide leading-tight">未送货</p>
+              <p id="statNotDelivered" class="text-xl sm:text-2xl lg:text-3xl font-bold text-amber-600 tabular-nums mt-0.5">0</p>
+            </div>
+            <div class="w-10 h-10 sm:w-12 lg:w-14 shrink-0 rounded-2xl bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center shadow-inner">
+              <i class="fas fa-clock text-amber-800 text-xl"></i>
+            </div>
+          </div>
+        </div>
+        <div data-stat="received" class="dashboard-card app-stat-card cursor-pointer rounded-2xl border border-slate-100 bg-white p-4 sm:p-5 shadow-sm animate-slide-up" style="animation-delay: 0.3s;">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-slate-500 text-[10px] sm:text-xs font-medium uppercase tracking-wide leading-tight">实收金额</p>
+              <p id="statAmount" class="text-lg sm:text-2xl lg:text-3xl font-bold text-teal-600 tabular-nums mt-0.5">¥0.00</p>
+            </div>
+            <div class="w-10 h-10 sm:w-12 lg:w-14 shrink-0 rounded-2xl bg-gradient-to-br from-violet-100 to-violet-200 flex items-center justify-center shadow-inner">
+              <i class="fas fa-wallet text-violet-700 text-xl"></i>
+            </div>
+          </div>
+        </div>
+        <div data-stat="owing" class="dashboard-card app-stat-card cursor-pointer rounded-2xl border border-slate-100 bg-white p-4 sm:p-5 shadow-sm animate-slide-up" style="animation-delay: 0.3s;">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-slate-500 text-[10px] sm:text-xs font-medium uppercase tracking-wide leading-tight">欠账商家</p>
+              <p id="statOwing" class="text-xl sm:text-2xl lg:text-3xl font-bold text-orange-600 tabular-nums mt-0.5">0</p>
+              <p id="statOwingAmount" class="text-sm font-semibold text-orange-500 mt-1 tabular-nums">¥0.00</p>
+            </div>
+            <div class="w-10 h-10 sm:w-12 lg:w-14 shrink-0 rounded-2xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center shadow-inner">
+              <i class="fas fa-exclamation-triangle text-orange-700 text-xl"></i>
+            </div>
+          </div>
+        </div>
+        <div data-stat="transfer" class="dashboard-card app-stat-card cursor-pointer rounded-2xl border border-slate-100 bg-white p-4 sm:p-5 shadow-sm animate-slide-up" style="animation-delay: 0.4s;">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-slate-500 text-[10px] sm:text-xs font-medium uppercase tracking-wide leading-tight">待转商家</p>
+              <p id="statTransfer" class="text-2xl sm:text-3xl font-bold text-sky-600 tabular-nums mt-0.5">0</p>
+              <p id="statTransferAmount" class="text-sm font-semibold text-sky-600 mt-1 tabular-nums">¥0.00</p>
+            </div>
+            <div class="w-10 h-10 sm:w-12 lg:w-14 shrink-0 rounded-2xl bg-gradient-to-br from-sky-100 to-sky-200 flex items-center justify-center shadow-inner">
+              <i class="fas fa-exchange-alt text-sky-800 text-xl"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
+
+
+      <!-- 今日需送货商家列表 -->
+      <div id="todayDeliveryList" class="hidden">
+        <div class="mb-4 flex justify-between items-center gap-3">
+          <h2 class="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
+            <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700">
+              <i class="fas fa-calendar-day"></i>
+            </span>
+            今日需送货商家
+          </h2>
+          <button type="button" onclick="addTodayDeliveryStore()" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 text-white text-sm font-semibold shadow-md shadow-cyan-900/15 hover:from-cyan-500 hover:to-teal-500 transition-colors">
+            <i class="fas fa-plus"></i> 新增
+          </button>
+        </div>
+        <div class="space-y-4" id="todayDeliveryItems">
+          <div class="text-center py-12 text-gray-500">
+            <i class="fas fa-calendar-check text-6xl mb-4 opacity-30"></i>
+            <p>今日暂无需要送货的商家</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 已送货商家列表 -->
+      <div id="deliveredList" class="hidden space-y-4">
+        <div class="text-center py-12 text-gray-500">
+          <i class="fas fa-check-circle text-6xl mb-4 opacity-30"></i>
+          <p>暂无已送货商家</p>
+        </div>
+      </div>
+
+      <!-- 欠账商家列表 -->
+      <div id="owingList" class="hidden">
+        <div class="mb-4 flex justify-between items-center">
+          <h2 class="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
+            <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-700">
+              <i class="fas fa-exclamation-triangle"></i>
+            </span>
+            欠账商家
+          </h2>
+        </div>
+        <div class="space-y-4" id="owingItems">
+          <div class="text-center py-12 text-gray-500">
+            <i class="fas fa-exclamation-triangle text-6xl mb-4 opacity-30"></i>
+            <p>暂无欠账商家</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 未送货商家列表 -->
+      <div id="notDeliveredList" class="hidden">
+        <div class="mb-4 flex justify-between items-center">
+          <h2 class="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
+            <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-800">
+              <i class="fas fa-clock"></i>
+            </span>
+            未送货商家
+          </h2>
+        </div>
+        <div class="space-y-4" id="notDeliveredItems">
+          <div class="text-center py-12 text-gray-500">
+            <i class="fas fa-clock text-6xl mb-4 opacity-30"></i>
+            <p>暂无未送货商家</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 实收金额列表 -->
+      <div id="receivedAmountList" class="hidden">
+        <div class="mb-4 flex justify-between items-center">
+          <h2 class="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
+            <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
+              <i class="fas fa-wallet"></i>
+            </span>
+            实收金额明细
+          </h2>
+        </div>
+        <div class="space-y-4" id="receivedAmountItems">
+          <div class="text-center py-12 text-gray-500">
+            <i class="fas fa-wallet text-6xl mb-4 opacity-30"></i>
+            <p>暂无实收金额记录</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 添加/编辑商家模态框 -->
+  <div class="fixed inset-0 bg-slate-900/45 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4" id="storeModal">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-md p-6 animate-scale-in max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-6">
+        <h2 id="modalTitle" class="text-xl font-bold text-gray-800">添加商家</h2>
+        <button onclick="closeStoreModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      <form id="storeForm" class="space-y-4">
+        <input type="hidden" id="editStoreId">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">商家名称 * <span class="text-gray-400 text-xs">(支持复制粘贴)</span></label>
+          <input type="text" id="modalStoreName" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" required placeholder="可直接粘贴商家名称">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">联系人</label>
+          <input type="text" id="modalContact" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">电话</label>
+          <input type="tel" id="modalPhone" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">备注</label>
+          <textarea id="modalRemark" rows="3" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"></textarea>
+        </div>
+        <div class="flex items-center">
+          <input type="checkbox" id="modalNeedDelivery" class="w-5 h-5 text-primary-600 rounded focus:ring-primary-500">
+          <label for="modalNeedDelivery" class="ml-2 text-sm font-medium text-gray-700">今日需要送货</label>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeStoreModal()" class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors">
+            取消
+          </button>
+          <button type="submit" class="flex-1 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors">
+            保存
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 新增今日送货商家模态框 -->
+  <div class="fixed inset-0 bg-slate-900/45 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4" id="todayDeliveryModal">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 animate-scale-in">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-800">新增今日送货商家</h2>
+        <button onclick="closeTodayDeliveryModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      <form id="todayDeliveryForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">商家名称 * <span class="text-gray-400 text-xs">(支持复制粘贴)</span></label>
+          <input type="text" id="todayDeliveryName" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" required placeholder="可直接粘贴商家名称">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">联系人</label>
+          <input type="text" id="todayDeliveryContact" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">电话</label>
+          <input type="tel" id="todayDeliveryPhone" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeTodayDeliveryModal()" class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors">
+            取消
+          </button>
+          <button type="submit" class="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors">
+            添加
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 月度总结模态框 -->
+  <div class="fixed inset-0 bg-slate-900/45 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4" id="monthlySummaryModal">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden animate-scale-in flex flex-col">
+      <div class="flex items-center justify-between p-5 border-b border-slate-100 shrink-0">
+        <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+          <i class="fas fa-calendar-alt text-teal-600"></i>
+          月度总结
+        </h2>
+        <button type="button" onclick="closeMonthlySummary()" class="text-gray-400 hover:text-gray-600 transition-colors" aria-label="关闭">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      <div class="p-5 overflow-y-auto flex-1 min-h-0">
+        <div class="flex flex-col sm:flex-row gap-4 mb-4">
+          <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-700 mb-1">选择月份</label>
+            <input type="month" id="monthlySummaryMonth" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+          <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-700 mb-1">片区</label>
+            <select id="monthlySummaryArea" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+              <option value="all">全部片区</option>
+              <option value="A">片区 A</option>
+              <option value="B">片区 B</option>
+              <option value="C">片区 C</option>
+            </select>
+          </div>
+          <div class="flex items-end">
+            <button type="button" onclick="renderMonthlySummary()" class="w-full sm:w-auto inline-flex min-h-[42px] items-center justify-center px-4 py-2 rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 text-white text-sm font-semibold shadow-md hover:from-teal-500 hover:to-cyan-500">
+              汇总
+            </button>
+          </div>
+        </div>
+        <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+          收款按每日实收规则汇总整月；欠账列表在<strong>本月</strong>取截至今天的底库数据，在<strong>历史月</strong>取该月末快照。历史依赖服务端每日快照（<code class="bg-slate-100 px-1 rounded">SNAPSHOT_RETENTION_DAYS</code>，默认约 400 天）。
+        </p>
+        <div id="monthlySummaryResult" class="text-sm text-slate-600">
+          <p class="text-center py-8 text-slate-400">请选择月份后点击「汇总」</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/mian1-shared.js"></script>
+  <script>
+    // 全局变量
+    let currentArea = null;
+    let selectedDate = new Date().toISOString().split('T')[0];
+    const PAYMENT_LABELS = { cash: '现金', wechat: '微信', alipay: '支付宝', card: '信用卡' };
+    const API_BASE_URL = Mian1.getApiBase();
+
+    async function getStores() {
+      try {
+        let url = `${API_BASE_URL}/merchants`;
+        // 无论 currentArea 是什么值，都添加 area 查询参数
+        if (currentArea) {
+          url += `?area=${currentArea}`;
+        }
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error('网络错误');
+        }
+        return await response.json();
+      } catch (error) {
+        console.error('获取商家数据失败:', error);
+        return [];
+      }
+    }
+
+    async function getAllStores() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/merchants`);
+        if (!response.ok) {
+          throw new Error('网络错误');
+        }
+        return await response.json();
+      } catch (error) {
+        console.error('获取所有商家数据失败:', error);
+        return [];
+      }
+    }
+
+    // 更新商家数据；opts.silent 为 true 时不弹提示（如跨日批量归零）；opts.showSuccess 为 true 时成功提示「已保存」
+    async function updateMerchant(id, data, opts) {
+      opts = opts || {};
+      const silent = !!opts.silent;
+      const showSuccess = !!opts.showSuccess;
+      try {
+        const response = await fetch(`${API_BASE_URL}/merchants/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status);
+        }
+        const json = await response.json();
+        if (showSuccess) {
+          Mian1.showToast('已保存', 'success');
+        }
+        return json;
+      } catch (error) {
+        console.error('更新商家数据失败:', error);
+        if (!silent) {
+          Mian1.showToast('保存失败，请检查网络与后端，数据可能未保存', 'error');
+        }
+        return null;
+      }
+    }
+
+    // 根据日期加载统计数据
+    async function loadStatsByDate() {
+      console.log('开始加载统计数据');
+      try {
+        if (!selectedDate) {
+          console.error('未选择日期');
+          return;
+        }
+        console.log('加载统计数据，日期:', selectedDate);
+
+        const today = new Date().toISOString().split('T')[0];
+        let stores = [];
+
+        // 历史日期：用快照
+        if (selectedDate !== today) {
+          // 商家总数始终按当前底库来显示，不跟历史日期变化
+          const currentStores = await getAllStores();
+          const currentTotal = currentStores.filter(s => !s.isTemp).length;
+          document.getElementById('statTotal').textContent = currentTotal;
+
+          stores = await Mian1.getBestSnapshot(selectedDate);
+          if (currentArea && currentArea !== 'all') {
+            stores = stores.filter(s => s.area === currentArea);
+          }
+          console.log('使用历史快照，商家数量:', stores.length);
+          updateStatsByDate(stores, selectedDate);
+          return;
+        }
+
+        // 今天：从后端读取
+        if (currentArea) {
+          console.log('加载指定片区数据，片区:', currentArea);
+          stores = await getStores();
+        } else {
+          console.log('加载所有片区数据');
+          stores = await getAllStores();
+        }
+        console.log('获取到的商家数量:', stores.length);
+        updateStatsByDate(stores, selectedDate);
+      } catch (error) {
+        console.error('加载统计数据失败:', error);
+        // 即使出错，也要更新统计数据为 0
+        updateStatsByDate([], selectedDate);
+      }
+    }
+
+    // 根据日期更新统计数据
+    function updateStatsByDate(stores, date) {
+      // date 对应的 stores 已经在调用处决定来自：后端 or 快照。
+      const today = new Date().toISOString().split('T')[0];
+      const source = date === today ? stores : stores;
+
+      // 不过滤临时商家，包括所有需要送货的商家
+      const regularStores = source.filter(s => !s.isTemp);
+
+      const total = regularStores.length;
+      const needDelivery = source.filter(s => s.needDelivery && !s.delivered).length;
+      const delivered = source.filter(s => s.delivered && s.deliveryDate === date).length;
+      const notDelivered = needDelivery - delivered;
+
+      // “实收金额”：优先按 paymentDate 统计（欠账/待转完成归属完成日），
+      // 若 paymentDate 缺失则回退到 deliveryDate（兼容旧数据）。
+      const amount = source
+        .filter(s => (s.paymentDate ? s.paymentDate === date : s.deliveryDate === date))
+        .reduce((sum, s) => {
+          const wechatAmount = parseFloat(s.wechatAmount) || 0;
+          const alipayAmount = parseFloat(s.alipayAmount) || 0;
+          const cardAmount = parseFloat(s.cardAmount) || 0;
+          const cashAmount = parseFloat(s.cashAmount) || 0;
+          const receivedAmount = parseFloat(s.receivedAmount) || 0;
+          return sum + wechatAmount + alipayAmount + cardAmount + cashAmount + receivedAmount;
+        }, 0);
+
+      const owingStores = source.filter(s => s.isOwing);
+      const owing = owingStores.length;
+      const owingAmount = owingStores.reduce((sum, s) => sum + (s.amount || 0), 0);
+
+      const transferStores = source.filter(s => s.isTransfer);
+      const transfer = transferStores.length;
+      const transferAmount = transferStores.reduce((sum, s) => sum + (s.transferAmount || 0), 0);
+
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statNeedDelivery').textContent = needDelivery;
+      document.getElementById('statDelivered').textContent = delivered;
+      document.getElementById('statNotDelivered').textContent = Math.max(0, notDelivered);
+      document.getElementById('statAmount').textContent = `¥${amount.toFixed(2)}`;
+      document.getElementById('statOwing').textContent = owing;
+      if (document.getElementById('statOwingAmount')) {
+          document.getElementById('statOwingAmount').textContent = `¥${owingAmount.toFixed(2)}`;
+      }
+      document.getElementById('statTransfer').textContent = transfer;
+      if (document.getElementById('statTransferAmount')) {
+          document.getElementById('statTransferAmount').textContent = `¥${transferAmount.toFixed(2)}`;
+      }
+    }
+
+    // 更新统计数据
+    function updateStats(stores) {
+      // 过滤掉临时商家（今日送货添加的）
+      const regularStores = stores.filter(s => !s.isTemp);
+      
+      const total = regularStores.length;
+      const needDelivery = stores.filter(s => s.needDelivery && !s.delivered).length;
+      const delivered = stores.filter(s => s.delivered).length;
+      const notDelivered = needDelivery - delivered;
+      const today = new Date().toISOString().split('T')[0];
+      // 与 updateStatsByDate（今天）一致：实收按 paymentDate，否则 deliveryDate，含欠账/待转回款
+      const amount = stores
+        .filter(s => (s.paymentDate ? s.paymentDate === today : s.deliveryDate === today))
+        .reduce((sum, s) => {
+          const wechatAmount = parseFloat(s.wechatAmount) || 0;
+          const alipayAmount = parseFloat(s.alipayAmount) || 0;
+          const cardAmount = parseFloat(s.cardAmount) || 0;
+          const cashAmount = parseFloat(s.cashAmount) || 0;
+          const receivedAmount = parseFloat(s.receivedAmount) || 0;
+          return sum + wechatAmount + alipayAmount + cardAmount + cashAmount + receivedAmount;
+        }, 0);
+      const owingStores = stores.filter(s => s.isOwing);
+      const owing = owingStores.length;
+      const owingAmount = owingStores.reduce((sum, s) => sum + (s.amount || 0), 0);
+      const transferStores = stores.filter(s => s.isTransfer);
+      const transfer = transferStores.length;
+      const transferAmount = transferStores.reduce((sum, s) => sum + (s.transferAmount || 0), 0);
+
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statNeedDelivery').textContent = needDelivery;
+      document.getElementById('statDelivered').textContent = delivered;
+      document.getElementById('statNotDelivered').textContent = Math.max(0, notDelivered);
+      document.getElementById('statAmount').textContent = `¥${amount.toFixed(2)}`;
+      document.getElementById('statOwing').textContent = owing;
+      if (document.getElementById('statOwingAmount')) {
+          document.getElementById('statOwingAmount').textContent = `¥${owingAmount.toFixed(2)}`;
+      }
+      document.getElementById('statTransfer').textContent = transfer;
+      if (document.getElementById('statTransferAmount')) {
+          document.getElementById('statTransferAmount').textContent = `¥${transferAmount.toFixed(2)}`;
+      }
+    }
+
+    // 渲染商家列表
+    function renderStores(stores) {
+      const storeList = document.getElementById('storeList');
+      if (!storeList) return;
+      const normalizedStores = stores.map(s => ({
+        ...s,
+        paymentMethods: normalizePaymentMethods(s.paymentMethods)
+      }));
+
+      storeList.innerHTML = normalizedStores.map(store => `
+        <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-100 hover:shadow-md hover:border-cyan-100 transition-all">
+          <div class="flex justify-between items-start">
+            <div>
+              <h3 class="text-lg font-medium text-gray-900 flex items-center gap-2">
+                ${store.name}
+                ${store.needDelivery ? `<span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">需送货</span>` : ''}
+                ${store.isTemp ? `<span class="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">临时</span>` : ''}
+              </h3>
+              ${store.address ? `<p class="text-gray-600 text-sm flex items-center gap-1 mt-1"><i class="fas fa-map-marker-alt"></i> ${store.address}</p>` : ''}
+              ${store.contact ? `<p class="text-gray-600 text-sm flex items-center gap-1"><i class="fas fa-user"></i> ${store.contact} ${store.phone ? ` ${store.phone}` : ''}</p>` : ''}
+              ${store.remark ? `<p class="text-gray-500 text-sm mt-1 flex items-center gap-1"><i class="fas fa-comment"></i> ${store.remark}</p>` : ''}
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="editStore(${store.id})" class="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="编辑">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button onclick="deleteStore(${store.id})" class="p-2 text-gray-400 hover:text-danger hover:bg-red-50 rounded-lg transition-colors" title="删除">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          ${store.delivered ? `
+            <div class="space-y-4 pt-4 border-t border-gray-100">
+              <div class="flex items-center gap-4">
+                <label class="text-gray-700">应收金额：</label>
+                <input type="number" value="${store.amount || ''}" 
+                       placeholder="填应收金额" 
+                       onchange="updateAmount(${store.id}, this.value)"
+                       class="w-32 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+                <span class="text-gray-500">元</span>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" ${store.isOwing ? 'checked' : ''} 
+                         onchange="toggleOwing(${store.id})"
+                         class="w-5 h-5 text-warning rounded focus:ring-warning">
+                  <span class="text-gray-700">欠账</span>
+                </label>
+              </div>
+
+              ${store.isOwing ? `
+                <div class="bg-orange-50 rounded-lg p-4">
+                  <h4 class="font-medium text-orange-800 mb-3 flex items-center gap-2">
+                    <i class="fas fa-upload"></i> 上传凭证
+                  </h4>
+                  <div class="space-y-3">
+                    <div>
+                      <label class="text-sm text-gray-600 mb-1 block">商店照片</label>
+                      <label class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-image text-gray-400"></i>
+                        <span class="text-sm text-gray-600">选择文件</span>
+                        <input type="file" accept="image/*" onchange="uploadImage(${store.id}, 'shopPhoto', this)" class="hidden">
+                      </label>
+                      ${store.shopPhoto ? `<img src="${store.shopPhoto}" class="mt-2 max-h-32 w-auto rounded-lg border border-gray-200" />` : ''}
+                    </div>
+                    <div>
+                      <label class="text-sm text-gray-600 mb-1 block">欠费单</label>
+                      <label class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-file-image text-gray-400"></i>
+                        <span class="text-sm text-gray-600">选择文件</span>
+                        <input type="file" accept="image/*" onchange="uploadImage(${store.id}, 'billPhoto', this)" class="hidden">
+                      </label>
+                      ${store.billPhoto ? `<img src="${store.billPhoto}" class="mt-2 max-h-32 w-auto rounded-lg border border-gray-200" />` : ''}
+                    </div>
+                  </div>
+                </div>
+              ` : `
+                <div class="bg-blue-50 rounded-lg p-4">
+                  <h4 class="font-medium text-blue-800 mb-3 flex items-center gap-2">
+                    <i class="fas fa-money-bill-wave"></i> 收款信息
+                  </h4>
+                  <div class="flex flex-wrap gap-4 mb-3">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" ${store.paymentMethods.includes('cash') ? 'checked' : ''} 
+                             onchange="togglePayment(${store.id}, 'cash')"
+                             class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                      <span class="text-gray-700">现金</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" ${store.paymentMethods.includes('wechat') ? 'checked' : ''} 
+                             onchange="togglePayment(${store.id}, 'wechat')"
+                             class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                      <span class="text-gray-700">微信</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" ${store.paymentMethods.includes('alipay') ? 'checked' : ''} 
+                             onchange="togglePayment(${store.id}, 'alipay')"
+                             class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                      <span class="text-gray-700">支付宝</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" ${store.paymentMethods.includes('card') ? 'checked' : ''} 
+                             onchange="togglePayment(${store.id}, 'card')"
+                             class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                      <span class="text-gray-700">信用卡</span>
+                    </label>
+                  </div>
+                  <div class="flex items-center gap-4 mb-4">
+                    <label class="text-gray-700">实收金额：</label>
+                    <input type="number" value="${store.receivedAmount || store.amount || ''}" 
+                           onchange="updateReceived(${store.id}, this.value)"
+                           class="w-32 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    <span class="text-gray-500">元</span>
+                  </div>
+                  <!-- 二维码：占位说明（请替换为各商户真实收款码图片或链接） -->
+                  <div class="mt-4">
+                    ${store.paymentMethods.includes('wechat') ? `
+                      <div class="bg-white p-3 rounded-lg border border-gray-200 mb-3">
+                        <h5 class="text-sm font-medium text-gray-700 mb-2">微信支付</h5>
+                        <div class="flex justify-center">
+                          <div class="w-48 h-48 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center text-slate-500 text-center px-3">
+                            <i class="fas fa-qrcode text-5xl mb-2 text-slate-300"></i>
+                            <p class="text-xs leading-relaxed">请配置本终端微信收款码<br><span class="text-slate-400">（劲酒业务 · 替换为真实二维码素材）</span></p>
+                          </div>
+                        </div>
+                      </div>
+                    ` : ''}
+                    ${store.paymentMethods.includes('alipay') ? `
+                      <div class="bg-white p-3 rounded-lg border border-gray-200 mb-3">
+                        <h5 class="text-sm font-medium text-gray-700 mb-2">支付宝</h5>
+                        <div class="flex justify-center">
+                          <div class="w-48 h-48 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center text-slate-500 text-center px-3">
+                            <i class="fas fa-qrcode text-5xl mb-2 text-slate-300"></i>
+                            <p class="text-xs leading-relaxed">请配置本终端支付宝收款码<br><span class="text-slate-400">（劲酒业务 · 替换为真实二维码素材）</span></p>
+                          </div>
+                        </div>
+                      </div>
+                    ` : ''}
+                    ${store.paymentMethods.includes('card') ? `
+                      <div class="bg-white p-3 rounded-lg border border-gray-200">
+                        <h5 class="text-sm font-medium text-gray-700 mb-2">信用卡 / 银联</h5>
+                        <div class="flex justify-center">
+                          <div class="w-48 h-48 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center text-slate-500 text-center px-3">
+                            <i class="fas fa-qrcode text-5xl mb-2 text-slate-300"></i>
+                            <p class="text-xs leading-relaxed">请配置本终端收款码<br><span class="text-slate-400">（劲酒业务 · 按实际通道替换素材）</span></p>
+                          </div>
+                        </div>
+                      </div>
+                    ` : ''}
+                  </div>
+                </div>
+              `}
+            </div>
+          ` : ''}
+        </div>
+      `).join('');
+    }
+
+    async function loadStores() {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        let allStores = [];
+
+        // 历史日期：用快照渲染
+        if (selectedDate && selectedDate !== today) {
+          allStores = await Mian1.getBestSnapshot(selectedDate);
+          if (currentArea && currentArea !== 'all') {
+            allStores = allStores.filter(s => s.area === currentArea);
+          }
+        } else {
+          // 不强制要求选择片区，默认显示所有片区
+          if (currentArea) {
+            allStores = await getStores();
+          } else {
+            allStores = await getAllStores();
+          }
+          // 只在“今天”时刷新统计（历史统计由 loadStatsByDate 负责）
+          updateStats(allStores);
+        }
+
+        // 过滤掉临时商家（今日送货添加的）
+        const regularStores = allStores.filter(s => !s.isTemp);
+        renderStores(regularStores);
+      } catch (error) {
+        console.error('加载商家数据失败:', error);
+        // 即使出错，也要显示空列表，避免页面崩溃
+        updateStats([]);
+        renderStores([]);
+      }
+    }
+
+    // 检查并更新新的一天的数据
+    async function checkAndUpdateNewDay() {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const yesterday = (() => {
+          const d = new Date(today);
+          d.setDate(d.getDate() - 1);
+          return d.toISOString().split('T')[0];
+        })();
+
+        const flagKey = `daily_snapshot_saved_${today}`;
+
+        // 1) 零点：把“昨天”的全量商家状态存档（用于历史日期回查）
+        if (!localStorage.getItem(flagKey)) {
+          const storesBeforeReset = await getAllStores();
+          localStorage.setItem(`daily_snapshot_${yesterday}`, JSON.stringify(storesBeforeReset));
+          await Mian1.putServerSnapshot(yesterday, storesBeforeReset);
+          localStorage.setItem(flagKey, '1');
+        }
+
+        // 2) 第二天归零：只归零“已送货/实收金额”，其他字段不动
+        const stores = await getAllStores();
+        for (const store of stores) {
+          const deliveryDate = store.deliveryDate || '';
+          const paymentDate = store.paymentDate || '';
+
+          let shouldUpdate = false;
+          let data = { ...store };
+
+          // 已送货清零（交付日 < 今天）
+          if (store.delivered && deliveryDate && deliveryDate < today) {
+            data.delivered = 0;
+            data.deliveryDate = '';
+            data.wechatAmount = 0;
+            data.alipayAmount = 0;
+            data.cardAmount = 0;
+            data.cashAmount = 0;
+            shouldUpdate = true;
+          }
+
+          // 实收金额清零（收款完成日 < 今天）
+          // 若 paymentDate 缺失，回退到 deliveryDate 做兼容处理
+          const resolvedPaymentDate = paymentDate || deliveryDate;
+          if (resolvedPaymentDate && resolvedPaymentDate < today) {
+            if (parseFloat(data.receivedAmount) > 0 || (data.wechatAmount + data.alipayAmount + data.cardAmount + data.cashAmount) > 0) {
+              data.receivedAmount = 0;
+              data.paymentDate = '';
+              data.paymentOrigin = '';
+              data.paymentMethods = '[]';
+              shouldUpdate = true;
+            }
+          }
+
+          if (shouldUpdate) {
+            await updateMerchant(store.id, data, { silent: true });
+          }
+        }
+
+        loadStores();
+      } catch (error) {
+        console.error('更新新的一天数据失败:', error);
+        // 即使出错，也要继续加载数据
+        loadStores();
+      }
+    }
+
+    // 计算日期差
+    function getDaysDifference(date1, date2) {
+      const d1 = new Date(date1);
+      const d2 = new Date(date2);
+      const diffTime = Math.abs(d2 - d1);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays;
+    }
+
+    // 格式化日期
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('zh-CN');
+    }
+
+    function isHistoryView() {
+      const today = new Date().toISOString().split('T')[0];
+      return !!(selectedDate && selectedDate !== today);
+    }
+
+    function showHistoryReadonlyMessage() {
+      alert(`当前查看的是 ${selectedDate} 的历史数据，只能查看，不能修改。`);
+    }
+
+    function normalizePaymentMethods(paymentMethods) {
+      if (Array.isArray(paymentMethods)) return paymentMethods;
+      if (typeof paymentMethods === 'string') {
+        try {
+          const parsed = JSON.parse(paymentMethods || '[]');
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+          return [];
+        }
+      }
+      return [];
+    }
+
+    // 防抖函数
+    function debounce(func, delay) {
+      let timer = null;
+      return function() {
+        clearTimeout(timer);
+        timer = setTimeout(func, delay);
+      };
+    }
+
+    // 保存今日送货商家
+    async function saveTodayDeliveryStore() {
+      if (isHistoryView()) return showHistoryReadonlyMessage();
+      const storeName = document.getElementById('todayDeliveryName').value;
+      const storeContact = document.getElementById('todayDeliveryContact').value;
+      const storePhone = document.getElementById('todayDeliveryPhone').value;
+
+      if (!storeName) {
+        alert('请输入商家名称');
+        return;
+      }
+
+      const storeData = {
+        name: storeName,
+        contact: storeContact,
+        phone: storePhone,
+        area: currentArea || 'A',
+        needDelivery: true,
+        delivered: 0,
+        amount: 0,
+        isOwing: false,
+        paymentMethods: '[]',
+        receivedAmount: 0,
+        wechatAmount: 0,
+        alipayAmount: 0,
+        cardAmount: 0,
+        cashAmount: 0,
+        deliveryDate: new Date().toISOString().split('T')[0],
+        isTemp: true
+      };
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/merchants`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(storeData)
+        });
+
+        if (!response.ok) {
+          throw new Error('网络错误');
+        }
+
+        Mian1.showToast('添加成功', 'success');
+
+        // 清空表单
+        document.getElementById('todayDeliveryName').value = '';
+        document.getElementById('todayDeliveryContact').value = '';
+        document.getElementById('todayDeliveryPhone').value = '';
+
+        // 关闭模态框
+        closeTodayDeliveryModal();
+
+        // 重新加载数据
+        loadStores();
+        loadStatsByDate();
+      } catch (error) {
+        console.error('添加今日送货商家失败:', error);
+        Mian1.showToast('添加失败，请检查网络与后端后重试', 'error');
+      }
+    }
+
+    // 保存商家到服务器
+    async function saveStoreToServer(data, id = null) {
+      try {
+        let response;
+        if (id) {
+          response = await fetch(`${API_BASE_URL}/merchants/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+        } else {
+          response = await fetch(`${API_BASE_URL}/merchants`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+        }
+
+        if (!response.ok) {
+          throw new Error('网络错误');
+        }
+
+        return await response.json();
+      } catch (error) {
+        console.error('保存商家数据失败:', error);
+        throw error;
+      }
+    }
+
+    // 保存商家
+    async function saveStore() {
+      if (isHistoryView()) return showHistoryReadonlyMessage();
+      const storeId = document.getElementById('editStoreId').value;
+      const storeName = document.getElementById('modalStoreName').value;
+      const storeContact = document.getElementById('modalContact').value;
+      const storePhone = document.getElementById('modalPhone').value;
+      const storeRemark = document.getElementById('modalRemark').value;
+      const storeNeedDelivery = document.getElementById('modalNeedDelivery').checked;
+
+      if (!storeName) {
+        alert('请输入商家名称');
+        return;
+      }
+
+      const storeData = {
+        name: storeName,
+        contact: storeContact,
+        phone: storePhone,
+        remark: storeRemark,
+        area: currentArea || 'A',
+        needDelivery: storeNeedDelivery,
+        delivered: 0,
+        amount: 0,
+        isOwing: false,
+        paymentMethods: '[]',
+        receivedAmount: 0,
+        wechatAmount: 0,
+        alipayAmount: 0,
+        cardAmount: 0,
+        cashAmount: 0,
+        deliveryDate: '',
+        isTemp: false
+      };
+
+      try {
+        await saveStoreToServer(storeData, storeId);
+
+        Mian1.showToast('保存成功', 'success');
+
+        // 关闭模态框
+        closeStoreModal();
+
+        // 清空表单
+        document.getElementById('editStoreId').value = '';
+        document.getElementById('modalStoreName').value = '';
+        document.getElementById('modalContact').value = '';
+        document.getElementById('modalPhone').value = '';
+        document.getElementById('modalRemark').value = '';
+        document.getElementById('modalNeedDelivery').checked = false;
+
+        // 重新加载数据
+        loadStores();
+        loadStatsByDate();
+      } catch (error) {
+        console.error('保存商家失败:', error);
+        Mian1.showToast('保存失败，请检查网络与后端后重试', 'error');
+      }
+    }
+
+    // 从服务器删除商家
+    async function deleteStoreFromServer(id) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/merchants/${id}`, {
+          method: 'DELETE'
+        });
+
+        if (!response.ok) {
+          throw new Error('网络错误');
+        }
+
+        return await response.json();
+      } catch (error) {
+        console.error('删除商家失败:', error);
+        throw error;
+      }
+    }
+
+    // 编辑商家
+    async function editStore(id) {
+      try {
+        const stores = await getStores();
+        const store = stores.find(s => s.id === id);
+
+        if (store) {
+          document.getElementById('editStoreId').value = store.id;
+          document.getElementById('modalStoreName').value = store.name;
+          document.getElementById('modalContact').value = store.contact;
+          document.getElementById('modalPhone').value = store.phone;
+          document.getElementById('modalRemark').value = store.remark;
+          document.getElementById('modalNeedDelivery').checked = store.needDelivery;
+
+          document.getElementById('modalTitle').textContent = '编辑商家';
+          document.getElementById('storeModal').classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error('编辑商家失败:', error);
+        Mian1.showToast('加载商家信息失败，请重试', 'error');
+      }
+    }
+
+    // 删除商家
+    async function deleteStore(id) {
+      if (isHistoryView()) return showHistoryReadonlyMessage();
+      if (!confirm('确定要删除这个商家吗？')) {
+        return;
+      }
+
+      try {
+        await deleteStoreFromServer(id);
+        Mian1.showToast('已删除', 'success');
+        loadStores();
+      } catch (error) {
+        console.error('删除商家失败:', error);
+        Mian1.showToast('删除失败，请检查网络与后端后重试', 'error');
+      }
+    }
+
+    // 更新金额
+    async function updateAmount(id, value) {
+      if (isHistoryView()) return showHistoryReadonlyMessage();
+      try {
+        const stores = await getStores();
+        const store = stores.find(s => s.id === id);
+
+        if (store) {
+          const updatedStore = { ...store, amount: parseFloat(value) || 0 };
+          await updateMerchant(id, updatedStore);
+        }
+      } catch (error) {
+        console.error('更新金额失败:', error);
+      }
+    }
+
+    // 切换欠账状态
+    async function toggleOwing(id) {
+      if (isHistoryView()) return showHistoryReadonlyMessage();
+      try {
+        const stores = await getStores();
+        const store = stores.find(s => s.id === id);
+
+        if (store) {
+          const newIsOwing = store.isOwing ? 0 : 1;
+          const now = new Date().toISOString().split('T')[0];
+          const owingStartDate = newIsOwing ? (store.owingStartDate || now) : store.owingStartDate;
+          const updatedStore = { ...store, isOwing: newIsOwing, owingStartDate };
+          const saved = await updateMerchant(id, updatedStore, { showSuccess: true });
+          if (saved) loadStores();
+        }
+      } catch (error) {
+        console.error('切换欠账状态失败:', error);
+      }
+    }
+
+    // 切换支付方式
+    async function togglePayment(id, method) {
+      if (isHistoryView()) return showHistoryReadonlyMessage();
+      try {
+        const stores = await getStores();
+        const store = stores.find(s => s.id === id);
+
+        if (store) {
+          let paymentMethods = normalizePaymentMethods(store.paymentMethods);
+          if (paymentMethods.includes(method)) {
+            paymentMethods = paymentMethods.filter(m => m !== method);
+          } else {
+            paymentMethods.push(method);
+          }
+
+          const updatedStore = { ...store, paymentMethods: JSON.stringify(paymentMethods) };
+          await updateMerchant(id, updatedStore, { showSuccess: true });
+        }
+      } catch (error) {
+        console.error('切换支付方式失败:', error);
+      }
+    }
+
+    // 更新实收金额
+    async function updateReceived(id, value) {
+      if (isHistoryView()) return showHistoryReadonlyMessage();
+      try {
+        const stores = await getStores();
+        const store = stores.find(s => s.id === id);
+
+        if (store) {
+          const now = new Date().toISOString().split('T')[0];
+          const updatedStore = {
+            ...store,
+            receivedAmount: parseFloat(value) || 0,
+            paymentDate: now,
+            paymentOrigin: store.paymentOrigin || '收款'
+          };
+          await updateMerchant(id, updatedStore);
+        }
+      } catch (error) {
+        console.error('更新实收金额失败:', error);
+      }
+    }
+
+    // 上传图片
+    async function uploadImage(id, field, input) {
+      if (isHistoryView()) return showHistoryReadonlyMessage();
+      const file = input.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        alert('请选择图片');
+        return;
+      }
+
+      try {
+        const imageDataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = e => resolve(e.target.result);
+          reader.onerror = () => reject(new Error('读取图片失败'));
+          reader.readAsDataURL(file);
+        });
+        const stores = await getStores();
+        const store = stores.find(s => s.id === id);
+
+        if (store) {
+          const updatedStore = { ...store, [field]: imageDataUrl };
+          const saved = await updateMerchant(id, updatedStore, { showSuccess: true });
+          if (saved) loadStores();
+        }
+      } catch (error) {
+        console.error('上传图片失败:', error);
+        Mian1.showToast('上传失败，请重试', 'error');
+      }
+    }
+
+    // 关闭商家模态框
+    function closeStoreModal() {
+      document.getElementById('storeModal').classList.add('hidden');
+      // 清空表单
+      document.getElementById('editStoreId').value = '';
+      document.getElementById('modalStoreName').value = '';
+      document.getElementById('modalContact').value = '';
+      document.getElementById('modalPhone').value = '';
+      document.getElementById('modalRemark').value = '';
+      document.getElementById('modalNeedDelivery').checked = false;
+    }
+
+    // 关闭今日送货模态框
+    function closeTodayDeliveryModal() {
+      document.getElementById('todayDeliveryModal').classList.add('hidden');
+      // 清空表单
+      document.getElementById('todayDeliveryName').value = '';
+      document.getElementById('todayDeliveryContact').value = '';
+      document.getElementById('todayDeliveryPhone').value = '';
+    }
+
+    // 全局查询函数
+    function handleQueryClick() {
+      console.log('查询按钮被点击');
+      // 确保selectedDate是最新的
+      selectedDate = document.getElementById('statsDate').value;
+      console.log('选择的日期:', selectedDate);
+      // 添加用户反馈
+      alert('正在查询 ' + selectedDate + ' 的数据...');
+      loadStores();
+      loadStatsByDate();
+    }
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      const today = new Date().toISOString().split('T')[0];
+      const ymNow = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+      const monthlyMonthEl = document.getElementById('monthlySummaryMonth');
+      if (monthlyMonthEl) monthlyMonthEl.value = ymNow;
+      document.getElementById('currentDate').textContent = new Date().toLocaleDateString('zh-CN', { 
+        year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' 
+      });
+
+      // 先解析 URL / 本地会话，确定「查询日期」（避免先跑零点逻辑再用今天覆盖）
+      const urlParams = new URLSearchParams(window.location.search);
+      const showContent = urlParams.get('showContent') === 'true';
+      const areaFromUrl = urlParams.get('area');
+      const dateFromUrl = urlParams.get('date');
+      const todayStrInit = new Date().toISOString().split('T')[0];
+      const dateOk = (d) => d && /^\d{4}-\d{2}-\d{2}$/.test(d);
+
+      let resolvedDate = todayStrInit;
+      if (dateOk(dateFromUrl)) {
+        resolvedDate = dateFromUrl;
+      } else {
+        try {
+          const saved = sessionStorage.getItem('peisong_stats_date');
+          if (dateOk(saved)) resolvedDate = saved;
+        } catch (e) {}
+      }
+      selectedDate = resolvedDate;
+      document.getElementById('statsDate').value = resolvedDate;
+      try {
+        sessionStorage.setItem('peisong_stats_date', resolvedDate);
+      } catch (e) {}
+
+      // 检查并更新新的一天的数据（在日期写回之后执行，内部 loadStores 会用到 selectedDate）
+      checkAndUpdateNewDay();
+
+      // 从 URL 恢复片区（从商家列表等子页返回时 ?area=A&showContent=true）
+      const areaBtnClass = ['active', 'bg-gradient-to-r', 'from-cyan-600', 'to-teal-600', 'text-white', 'border-transparent', 'shadow-md', 'ring-2', 'ring-cyan-400/40'];
+      document.querySelectorAll('.area-btn').forEach(b => b.classList.remove(...areaBtnClass));
+
+      if (areaFromUrl === 'A' || areaFromUrl === 'B' || areaFromUrl === 'C') {
+        currentArea = areaFromUrl;
+        const btn = document.querySelector(`.area-btn[data-area="${areaFromUrl}"]`);
+        if (btn) btn.classList.add(...areaBtnClass);
+      } else {
+        currentArea = null;
+        const allBtn = document.querySelector('.area-btn[data-area="all"]');
+        if (allBtn) allBtn.classList.add(...areaBtnClass);
+      }
+
+      if (showContent || areaFromUrl) {
+        document.getElementById('mainContent').classList.remove('hidden');
+      }
+      
+      // 确保在 currentArea 变量更新之后再加载数据
+      // 无论是否显示内容，都加载数据，确保统计数字正确显示
+      setTimeout(() => {
+        loadStores();
+        loadStatsByDate();
+      }, 100);
+
+      // 绑定查询按钮的点击事件
+      const queryButton = document.getElementById('queryButton');
+      if (queryButton) {
+        queryButton.addEventListener('click', function() {
+          console.log('查询按钮被点击');
+          selectedDate = document.getElementById('statsDate').value;
+          try {
+            sessionStorage.setItem('peisong_stats_date', selectedDate);
+          } catch (e) {}
+          console.log('选择的日期:', selectedDate);
+          loadStores();
+          loadStatsByDate();
+        });
+      } else {
+        console.error('查询按钮未找到');
+      }
+
+      // 日期选择器变化时更新selectedDate并重新加载数据
+      document.getElementById('statsDate').addEventListener('change', function() {
+        selectedDate = this.value;
+        try {
+          sessionStorage.setItem('peisong_stats_date', selectedDate);
+        } catch (e) {}
+        loadStores();
+        loadStatsByDate();
+      });
+
+      document.querySelectorAll('.area-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.area-btn').forEach(b => b.classList.remove('active', 'bg-gradient-to-r', 'from-cyan-600', 'to-teal-600', 'text-white', 'border-transparent', 'shadow-md', 'ring-2', 'ring-cyan-400/40'));
+          btn.classList.add('active', 'bg-gradient-to-r', 'from-cyan-600', 'to-teal-600', 'text-white', 'border-transparent', 'shadow-md', 'ring-2', 'ring-cyan-400/40');
+          currentArea = btn.dataset.area;
+          document.getElementById('mainContent').classList.remove('hidden');
+          // 确保日期选择器显示当前选中的日期
+          document.getElementById('statsDate').value = selectedDate;
+          loadStores();
+          loadStatsByDate();
+        });
+      });
+
+      // 表单提交
+      document.getElementById('storeForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        saveStore();
+      });
+
+      // 今日送货表单提交
+      document.getElementById('todayDeliveryForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        saveTodayDeliveryStore();
+      });
+
+      // 绑定统计卡片点击事件
+      document.querySelectorAll('.dashboard-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const statType = this.dataset.stat;
+          const area = currentArea || 'all';
+          selectedDate = document.getElementById('statsDate').value || selectedDate;
+          try {
+            sessionStorage.setItem('peisong_stats_date', selectedDate);
+          } catch (e) {}
+          const dateParam = selectedDate ? `&date=${encodeURIComponent(selectedDate)}` : '';
+          if (statType === 'total') window.location.href = `store-list.html?area=${area}${dateParam}`;
+          else if (statType === 'today') window.location.href = `today-delivery.html?area=${area}${dateParam}`;
+          else if (statType === 'delivered') window.location.href = `delivered-list.html?area=${area}${dateParam}`;
+          else if (statType === 'notDelivered') window.location.href = `not-delivered.html?area=${area}${dateParam}`;
+          else if (statType === 'received') window.location.href = `received-amount.html?area=${area}${dateParam}`;
+          else if (statType === 'owing') window.location.href = `owing-list.html?area=${area}${dateParam}`;
+          else if (statType === 'transfer') window.location.href = `transfer-list.html?area=${area}${dateParam}`;
+        });
+      });
+
+      // 设置自动保存功能
+      setupAutoSave();
+    });
+
+    // NOTE: duplicated helper/function block removed to prevent overrides.
+
+    // 导出数据
+    async function exportData() {
+      const stores = await getStores();
+      if (stores.length === 0) {
+        alert('没有数据可导出');
+        return;
+      }
+
+      const headers = ['商家名称', '联系人', '电话', '备注', '送货状态', '送货日期', '应收金额', '是否欠账', '支付方式', '实收金额'];
+      const rows = stores.map(store => {
+        const methods = typeof store.paymentMethods === 'string' ? JSON.parse(store.paymentMethods) : (store.paymentMethods || []);
+        return [
+          store.name,
+          store.contact || '',
+          store.phone || '',
+          store.remark || '',
+          store.delivered ? '已送货' : '未送货',
+          store.deliveryDate || '',
+          store.amount || 0,
+          store.isOwing ? '是' : '否',
+          methods.map(m => PAYMENT_LABELS[m]).join('、') || '',
+          store.receivedAmount || 0
+        ];
+      });
+
+      const csv = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `送货数据_${currentArea}_${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+    }
+
+    function lastDayOfMonthStr(ym) {
+      const parts = ym.split('-').map(Number);
+      const y = parts[0];
+      const m = parts[1];
+      const last = new Date(y, m, 0).getDate();
+      return `${y}-${String(m).padStart(2, '0')}-${String(last).padStart(2, '0')}`;
+    }
+
+    /** 欠账判断（含今日送货里新增的临时商家，与仪表盘一致，不按 isTemp 排除） */
+    function merchantIsOwing(s) {
+      if (!s) return false;
+      const v = s.isOwing;
+      if (v === true || v === 1) return true;
+      if (typeof v === 'string') {
+        const t = v.trim();
+        if (t === '1' || t.toLowerCase() === 'true') return true;
+      }
+      return parseInt(v, 10) === 1;
+    }
+
+    /** 单日实收汇总（微信/支付宝/信用卡/现金 + paymentMethods 分摊），与原先对账逻辑一致 */
+    function accumulatePaymentStatsForDay(stores, date) {
+      const paymentStats = { cash: 0, wechat: 0, card: 0, alipay: 0 };
+      const receivedRecords = stores.filter(s => {
+        const belongsToDay = s.paymentDate ? s.paymentDate === date : s.deliveryDate === date;
+        const wechatAmount = parseFloat(s.wechatAmount) || 0;
+        const alipayAmount = parseFloat(s.alipayAmount) || 0;
+        const cardAmount = parseFloat(s.cardAmount) || 0;
+        const cashAmount = parseFloat(s.cashAmount) || 0;
+        const ra = parseFloat(s.receivedAmount) || 0;
+        const total = wechatAmount + alipayAmount + cardAmount + cashAmount + ra;
+        return belongsToDay && total > 0;
+      });
+      receivedRecords.forEach(s => {
+        paymentStats.wechat += parseFloat(s.wechatAmount) || 0;
+        paymentStats.alipay += parseFloat(s.alipayAmount) || 0;
+        paymentStats.card += parseFloat(s.cardAmount) || 0;
+        paymentStats.cash += parseFloat(s.cashAmount) || 0;
+        let methods = s.paymentMethods || [];
+        if (typeof methods === 'string') {
+          try { methods = JSON.parse(methods); } catch (e) { methods = []; }
+        }
+        if (!Array.isArray(methods)) methods = [];
+        const ra = parseFloat(s.receivedAmount) || 0;
+        if (ra > 0 && methods.length > 0) {
+          methods.forEach(m => {
+            paymentStats[m] = (paymentStats[m] || 0) + ra;
+          });
+        }
+      });
+      return paymentStats;
+    }
+
+    function showMonthlySummary() {
+      document.getElementById('monthlySummaryModal').classList.remove('hidden');
+      const mEl = document.getElementById('monthlySummaryMonth');
+      if (mEl && !mEl.value) {
+        const n = new Date();
+        mEl.value = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}`;
+      }
+    }
+
+    function closeMonthlySummary() {
+      document.getElementById('monthlySummaryModal').classList.add('hidden');
+    }
+
+    async function renderMonthlySummary() {
+      const ym = document.getElementById('monthlySummaryMonth').value;
+      const area = document.getElementById('monthlySummaryArea').value;
+      const out = document.getElementById('monthlySummaryResult');
+      if (!ym) {
+        Mian1.showToast('请选择月份', 'error');
+        return;
+      }
+      const today = new Date().toISOString().split('T')[0];
+      const thisMonthStr = today.slice(0, 7);
+      if (ym > thisMonthStr) {
+        Mian1.showToast('不能选择未来月份', 'error');
+        return;
+      }
+
+      const [Y, M] = ym.split('-').map(Number);
+      out.innerHTML = '<p class="text-center py-10 text-slate-500"><i class="fas fa-spinner fa-spin mr-2"></i>正在汇总…</p>';
+
+      const monthly = { cash: 0, wechat: 0, card: 0, alipay: 0 };
+
+      try {
+        const daysInMonth = new Date(Y, M, 0).getDate();
+        for (let d = 1; d <= daysInMonth; d++) {
+          const dateStr = `${Y}-${String(M).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          if (dateStr > today) break;
+          let stores = dateStr === today ? await getAllStores() : await Mian1.getBestSnapshot(dateStr);
+          if (!Array.isArray(stores)) stores = [];
+          if (area !== 'all') {
+            stores = stores.filter(s => s.area === area);
+          }
+          const dayStats = accumulatePaymentStatsForDay(stores, dateStr);
+          monthly.cash += dayStats.cash;
+          monthly.wechat += dayStats.wechat;
+          monthly.card += dayStats.card;
+          monthly.alipay += dayStats.alipay;
+        }
+
+        let asOfDate = ym === thisMonthStr ? today : lastDayOfMonthStr(ym);
+        let owingStoresData = asOfDate === today ? await getAllStores() : await Mian1.getBestSnapshot(asOfDate);
+        if (!Array.isArray(owingStoresData)) owingStoresData = [];
+        if (area !== 'all') {
+          owingStoresData = owingStoresData.filter(s => s.area === area);
+        }
+        let owingList = owingStoresData.filter(s => merchantIsOwing(s));
+        owingList.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'zh-CN'));
+
+        const totalRecv = monthly.cash + monthly.wechat + monthly.card + monthly.alipay;
+
+        let owingHtml = '';
+        if (owingList.length === 0) {
+          owingHtml = '<p class="text-slate-500 text-center py-4">该时点无欠账商家</p>';
+        } else {
+          owingHtml = `
+            <div class="rounded-xl border border-amber-200/90 bg-amber-50 p-3 max-h-[min(380px,52vh)] overflow-y-auto shadow-sm">
+              <h4 class="font-semibold text-amber-950 mb-3 flex items-center gap-2 text-sm">
+                <i class="fas fa-info-circle text-amber-800"></i> 欠账商家列表
+              </h4>
+              <div class="space-y-2">
+                ${owingList.map(s => `
+                  <div class="bg-white rounded-xl p-3 flex justify-between items-start gap-3 border border-amber-100/90 shadow-sm">
+                    <div class="min-w-0">
+                      <p class="font-medium text-slate-900 leading-snug">${s.name || ''}</p>
+                      <p class="text-xs text-slate-500 mt-1">片区${s.area || ''} | ${s.contact || '无联系人'}</p>
+                    </div>
+                    <span class="text-base font-bold text-amber-900 tabular-nums shrink-0">¥${(parseFloat(s.amount) || 0).toFixed(2)}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>`;
+        }
+
+        const labelOwing = ym === thisMonthStr ? '当前欠账商家（截至今天）' : `月末欠账商家（${asOfDate} 快照）`;
+
+        out.innerHTML = `
+          <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 mb-4">
+            <h3 class="text-sm font-semibold text-slate-700 mb-3">${ym} 收款方式合计</h3>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="flex justify-between items-center py-2 border-b border-slate-200/80">
+                <span><i class="fab fa-weixin text-green-600 mr-1"></i>微信</span>
+                <span class="font-semibold tabular-nums">¥${monthly.wechat.toFixed(2)}</span>
+              </div>
+              <div class="flex justify-between items-center py-2 border-b border-slate-200/80">
+                <span><i class="fas fa-coins text-blue-500 mr-1"></i>支付宝</span>
+                <span class="font-semibold tabular-nums">¥${monthly.alipay.toFixed(2)}</span>
+              </div>
+              <div class="flex justify-between items-center py-2 border-b border-slate-200/80">
+                <span><i class="fas fa-credit-card text-indigo-600 mr-1"></i>信用卡</span>
+                <span class="font-semibold tabular-nums">¥${monthly.card.toFixed(2)}</span>
+              </div>
+              <div class="flex justify-between items-center py-2 border-b border-slate-200/80">
+                <span><i class="fas fa-coins text-amber-600 mr-1"></i>现金</span>
+                <span class="font-semibold tabular-nums">¥${monthly.cash.toFixed(2)}</span>
+              </div>
+            </div>
+            <p class="mt-3 pt-3 border-t border-slate-200 text-right text-slate-700">
+              本月实收合计 <strong class="text-lg text-teal-700 tabular-nums">¥${totalRecv.toFixed(2)}</strong>
+            </p>
+          </div>
+          <h3 class="text-sm font-semibold text-slate-700 mb-2">${labelOwing}</h3>
+          ${owingHtml}
+        `;
+      } catch (e) {
+        console.error(e);
+        out.innerHTML = '<p class="text-red-600 text-center py-6">汇总失败，请检查网络或稍后重试</p>';
+        Mian1.showToast('月度汇总失败', 'error');
+      }
+    }
+
+    // 关闭模态框点击外部
+    ['storeModal', 'monthlySummaryModal'].forEach(id => {
+      document.getElementById(id).addEventListener('click', (e) => {
+        if (e.target === document.getElementById(id)) {
+          document.getElementById(id).classList.add('hidden');
+        }
+      });
+    });
+
+    // 计算到零点的时间差
+    function getTimeToMidnight() {
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setHours(24, 0, 0, 0);
+      return midnight - now;
+    }
+
+    // 自动保存数据到本地存储
+    function autoSaveData() {
+      console.log('自动保存数据...');
+      const today = new Date().toISOString().split('T')[0];
+      
+      // 获取当前数据
+      getStores().then(stores => {
+        // 过滤出今天的数据
+        const todayStores = stores.filter(s => s.deliveryDate === today);
+        
+        // 保存到本地存储
+        localStorage.setItem(`delivery_data_${today}`, JSON.stringify(todayStores));
+        console.log('数据保存成功，日期:', today, '保存的商家数量:', todayStores.length);
+      });
+    }
+
+    // 设置每天零点自动保存
+    function setupAutoSave() {
+      // 计算到零点的时间差
+      const timeToMidnight = getTimeToMidnight();
+      console.log('距离零点还有:', timeToMidnight / 1000 / 60, '分钟');
+      
+      // 设置定时器，零点时自动保存
+      setTimeout(async () => {
+        // 零点：先按“第二天归零 + 存档”处理，再保存今天数据
+        await checkAndUpdateNewDay();
+        // 之后每天零点归零+存档
+        setInterval(() => {
+          checkAndUpdateNewDay().catch(err => console.error('每日更新失败:', err));
+        }, 24 * 60 * 60 * 1000);
+      }, timeToMidnight);
+    }
+
+  </script>
+  <script src="js/home-encouragement.js"></script>
+  <script src="js/app-shell-init.js" defer></script>
+  <script src="js/pwa-bootstrap.js" defer></script>
+</body>
+</html>

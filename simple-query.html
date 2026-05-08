@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
+    <title>快速查询 · 劲酒配送管家</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta name="theme-color" content="#0e7490">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="劲酒配送">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="css/app-shell.css">
+    <link rel="stylesheet" href="css/page-decor.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen app-body-bg">
+  <script src="js/page-decor-inject.js"></script>
+    <header class="app-topbar sticky top-0 z-40 text-white">
+        <div class="max-w-7xl mx-auto px-3 sm:px-4 py-3.5">
+            <div class="flex items-center gap-3">
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20">
+                    <i class="fas fa-search text-sm"></i>
+                </span>
+                <h1 class="text-lg font-bold">????</h1>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        <div class="app-panel p-4 sm:p-6 mb-5">
+            <h2 class="text-base sm:text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700">
+                    <i class="fas fa-calendar text-sm"></i>
+                </span>
+                ???????
+            </h2>
+            <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                <label class="text-sm font-medium text-slate-600 shrink-0" for="queryDate">????</label>
+                <input type="date" id="queryDate" class="min-h-[44px] w-full sm:w-auto px-3 py-2.5 border border-slate-200 rounded-xl bg-white text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/35 focus:border-cyan-400">
+                <button type="button" id="queryButton" class="inline-flex min-h-[44px] w-full sm:w-auto items-center justify-center px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 text-white text-sm font-semibold shadow-md shadow-cyan-900/15 hover:from-cyan-500 hover:to-teal-500 transition-colors">
+                    <i class="fas fa-search mr-2"></i> ??
+                </button>
+            </div>
+            <p class="text-xs text-slate-500 mt-3">??????????????????????????</p>
+        </div>
+
+        <div id="statsContainer" class="app-panel p-4 sm:p-6 mb-5 hidden">
+            <h2 class="text-base font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+                    <i class="fas fa-chart-bar text-sm"></i>
+                </span>
+                ??
+            </h2>
+            <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                <div class="rounded-xl border border-slate-100 bg-slate-50/80 p-4">
+                    <p class="text-slate-500 text-xs font-medium">???????????</p>
+                    <p id="totalStores" class="text-xl sm:text-2xl font-bold text-slate-800 tabular-nums mt-1">0</p>
+                </div>
+                <div class="rounded-xl border border-emerald-100 bg-emerald-50/80 p-4">
+                    <p class="text-emerald-700/80 text-xs font-medium">?????</p>
+                    <p id="deliveredStores" class="text-xl sm:text-2xl font-bold text-emerald-600 tabular-nums mt-1">0</p>
+                </div>
+                <div class="rounded-xl border border-amber-100 bg-amber-50/80 p-4">
+                    <p class="text-amber-800/80 text-xs font-medium">???</p>
+                    <p id="notDeliveredStores" class="text-xl sm:text-2xl font-bold text-amber-700 tabular-nums mt-1">0</p>
+                </div>
+                <div class="rounded-xl border border-violet-100 bg-violet-50/80 p-4">
+                    <p class="text-violet-800/80 text-xs font-medium">?????????</p>
+                    <p id="totalAmount" class="text-xl sm:text-2xl font-bold text-violet-700 tabular-nums mt-1">?0.00</p>
+                </div>
+                <div class="rounded-xl border border-orange-100 bg-orange-50/80 p-4">
+                    <p class="text-orange-800/80 text-xs font-medium">?????</p>
+                    <p id="owingStores" class="text-xl sm:text-2xl font-bold text-orange-600 tabular-nums mt-1">0</p>
+                </div>
+                <div class="rounded-xl border border-yellow-100 bg-yellow-50/80 p-4">
+                    <p class="text-yellow-800/80 text-xs font-medium">??????</p>
+                    <p id="owingAmount" class="text-xl sm:text-2xl font-bold text-yellow-700 tabular-nums mt-1">?0.00</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="storeList" class="app-panel p-4 sm:p-6 hidden">
+            <h2 class="text-base font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700">
+                    <i class="fas fa-store text-sm"></i>
+                </span>
+                ????
+            </h2>
+            <div id="storeItems" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <script src="js/mian1-shared.js"></script>
+    <script>
+        const API_BASE_URL = Mian1.getApiBase();
+        let selectedDate = new Date().toISOString().split('T')[0];
+
+        async function getStoresForQuery(date) {
+            const today = new Date().toISOString().split('T')[0];
+            if (date && date !== today) {
+                return Mian1.getBestSnapshot(date);
+            }
+            const response = await fetch(`${API_BASE_URL}/merchants`);
+            if (!response.ok) throw new Error('????');
+            return response.json();
+        }
+
+        function storeDayTotal(s) {
+            const wechat = parseFloat(s.wechatAmount) || 0;
+            const alipay = parseFloat(s.alipayAmount) || 0;
+            const card = parseFloat(s.cardAmount) || 0;
+            const cash = parseFloat(s.cashAmount) || 0;
+            const received = parseFloat(s.receivedAmount) || 0;
+            return wechat + alipay + card + cash + received;
+        }
+
+        function init() {
+            document.getElementById('queryDate').value = selectedDate;
+            document.getElementById('queryButton').addEventListener('click', handleQuery);
+            document.getElementById('queryDate').addEventListener('change', function () {
+                selectedDate = this.value;
+            });
+        }
+
+        async function handleQuery() {
+            try {
+                const statsContainer = document.getElementById('statsContainer');
+                const storeList = document.getElementById('storeList');
+                statsContainer.classList.remove('hidden');
+                storeList.classList.remove('hidden');
+
+                const stores = await getStoresForQuery(selectedDate);
+                updateStats(stores, selectedDate);
+                renderStoreList(stores, selectedDate);
+            } catch (error) {
+                console.error('????:', error);
+                alert('???????????????? 3000?????');
+            }
+        }
+
+        function updateStats(stores, date) {
+            const total = stores.length;
+            const delivered = stores.filter(s => s.delivered && s.deliveryDate === date).length;
+            const notDelivered = stores.filter(s => s.needDelivery && !s.delivered).length;
+            const amount = stores
+                .filter(s => s.delivered && s.deliveryDate === date)
+                .reduce((sum, s) => sum + storeDayTotal(s), 0);
+            const owingStores = stores.filter(s => s.isOwing);
+            const owing = owingStores.length;
+            const owingAmount = owingStores.reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0);
+
+            document.getElementById('totalStores').textContent = total;
+            document.getElementById('deliveredStores').textContent = delivered;
+            document.getElementById('notDeliveredStores').textContent = notDelivered;
+            document.getElementById('totalAmount').textContent = `?${amount.toFixed(2)}`;
+            document.getElementById('owingStores').textContent = owing;
+            document.getElementById('owingAmount').textContent = `?${owingAmount.toFixed(2)}`;
+        }
+
+        function renderStoreList(stores, date) {
+            const storeItems = document.getElementById('storeItems');
+            const filteredStores = stores.filter(s => s.deliveryDate === date || s.needDelivery);
+
+            if (filteredStores.length === 0) {
+                storeItems.innerHTML = `
+                    <div class="text-center py-12 text-slate-500">
+                        <i class="fas fa-calendar-check text-6xl mb-4 opacity-30"></i>
+                        <p>???????????????</p>
+                    </div>
+                `;
+                return;
+            }
+
+            storeItems.innerHTML = filteredStores.map(store => {
+                const isDeliveredDay = store.delivered && store.deliveryDate === date;
+                const total = storeDayTotal(store);
+                return `
+                <div class="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-lg font-medium text-slate-900">${store.name}</h3>
+                            ${store.contact ? `<p class="text-slate-600 text-sm">???${store.contact} ${store.phone ? `??: ${store.phone}` : ''}</p>` : ''}
+                            <div class="mt-2 flex gap-2 flex-wrap">
+                                ${isDeliveredDay
+                                    ? `<span class="px-2 py-1 bg-emerald-100 text-emerald-800 text-xs rounded-full">???</span>`
+                                    : `<span class="px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-full">???</span>`}
+                                ${store.isOwing ? `<span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">??</span>` : ''}
+                            </div>
+                        </div>
+                        ${isDeliveredDay
+                            ? `<div class="text-right">
+                                <p class="text-sm text-slate-500">?????${store.deliveryDate || '-'}</p>
+                                <p class="text-lg font-bold text-teal-600 tabular-nums">?${total.toFixed(2)}</p>
+                            </div>`
+                            : ''}
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        window.onload = init;
+    </script>
+    <script src="js/app-shell-init.js" defer></script>
+    <script src="js/pwa-bootstrap.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,278 @@
+/**
+ * 配送管家 · 全局视觉：安全区、触控、统一顶栏与背景
+ */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-top: env(safe-area-inset-top, 0);
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  font-family: ui-sans-serif, system-ui, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+}
+
+/**
+ * 手机端：避免输入框聚焦时 iOS 整页缩放（需至少 16px），并略收紧主字号
+ */
+@media (max-width: 639.98px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]),
+  select,
+  textarea {
+    font-size: 1rem !important;
+  }
+}
+
+/* 页面背景：浅灰 + 轻微层次，比纯 gray-50 更有质感 */
+.app-body-bg {
+  background: linear-gradient(165deg, #e2e8f0 0%, #f1f5f9 28%, #f8fafc 70%);
+  background-attachment: fixed;
+}
+
+/* 统一顶栏：深青 + 午夜蓝，比纯蓝紫渐变更耐看 */
+.app-topbar {
+  background: linear-gradient(125deg, #0f172a 0%, #0e7490 42%, #134e4a 100%);
+  color: #fff;
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.18);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* 内容区白卡片：细边框 + 轻阴影 */
+.app-panel {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 1rem;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 4px 24px rgba(15, 23, 42, 0.06);
+}
+
+@media (max-width: 639.98px) {
+  .app-panel {
+    border-radius: 0.875rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .app-panel {
+    border-radius: 1.25rem;
+  }
+}
+
+/* 统计卡 hover 微抬起 */
+.app-stat-card {
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+.app-stat-card:hover {
+  box-shadow:
+    0 4px 6px rgba(15, 23, 42, 0.05),
+    0 12px 32px rgba(15, 23, 42, 0.08);
+  border-color: rgba(6, 182, 212, 0.25);
+  transform: translateY(-1px);
+}
+
+/* 全站页脚：统一品牌与多行业定位 */
+.app-shell-footer {
+  margin-top: 2rem;
+  padding: 1.25rem 1rem 1.75rem;
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(226, 232, 240, 0.95);
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.4) 0%, rgba(241, 245, 249, 0.95) 100%);
+  text-align: center;
+}
+
+.app-shell-footer__inner {
+  max-width: 36rem;
+  margin: 0 auto;
+}
+
+.app-shell-footer__brand {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 0.8125rem;
+  margin: 0 0 0.35rem;
+  letter-spacing: 0.06em;
+}
+
+.app-shell-footer__tagline {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin: 0 0 0.5rem;
+  line-height: 1.55;
+}
+
+.app-shell-footer__meta {
+  font-size: 0.6875rem;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.app-shell-footer__meta a {
+  color: #0e7490;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.app-shell-footer__meta a:hover {
+  text-decoration: underline;
+}
+
+/*
+ * 管理后台风格增强：
+ * 让页面更接近传统成熟 Web 系统（规整、清晰、信息密度更高）
+ */
+body {
+  color: #1f2937;
+}
+
+.app-topbar {
+  background: linear-gradient(120deg, #0f172a 0%, #155e75 55%, #164e63 100%);
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.2);
+}
+
+.app-panel {
+  border-radius: 0.5rem;
+  border: 1px solid #d7e2ea;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+}
+
+.app-stat-card {
+  border-radius: 0.5rem;
+  border-color: #d8e5eb;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+}
+
+.app-stat-card:hover {
+  border-color: #9dd7ea;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.16);
+  transform: translateY(-1px);
+}
+
+/* 列表卡片风格更贴近“表格行” */
+#deliveryList > div,
+#storeList > div,
+#deliveredList > div,
+#notDeliveredList > div,
+#owingList > div,
+#transferList > div,
+#receivedList > div {
+  border-radius: 0.5rem !important;
+  border: 1px solid #d7e2ea !important;
+  box-shadow: none !important;
+  background: #ffffff !important;
+}
+
+#deliveryList > div:hover,
+#storeList > div:hover,
+#deliveredList > div:hover,
+#notDeliveredList > div:hover,
+#owingList > div:hover,
+#transferList > div:hover,
+#receivedList > div:hover {
+  border-color: #94d4ea !important;
+  box-shadow: 0 3px 12px rgba(14, 116, 144, 0.12) !important;
+}
+
+/* 输入控件统一，像后台筛选区 */
+input[type="search"],
+input[type="text"],
+input[type="number"],
+input[type="tel"],
+input[type="date"],
+select,
+textarea {
+  border-radius: 0.4rem !important;
+  border-color: #cbd5e1 !important;
+  background: #fff !important;
+}
+
+input[type="search"]:focus,
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="tel"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+  border-color: #0891b2 !important;
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.14) !important;
+}
+
+/* 按钮统一为后台风格：少圆角、可读性更强 */
+button,
+.btn {
+  border-radius: 0.45rem !important;
+}
+
+/* PC 端增强“网页感”：内容更像固定后台容器 */
+@media (min-width: 1024px) {
+  body.app-body-bg,
+  body.peisong-mesh-bg {
+    background-attachment: fixed;
+  }
+
+  .max-w-7xl {
+    max-width: 1220px !important;
+  }
+}
+
+/* 统一后台表格 */
+.app-table-wrap {
+  border: 1px solid #d7e2ea;
+  border-radius: 0.5rem;
+  background: #fff;
+  overflow: hidden;
+}
+
+.app-table-scroll {
+  overflow-x: auto;
+}
+
+.app-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 880px;
+}
+
+.app-table thead th {
+  background: #ecfeff;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid #cfe7ef;
+  white-space: nowrap;
+}
+
+.app-table tbody td {
+  font-size: 13px;
+  color: #1f2937;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e7eef4;
+  vertical-align: middle;
+}
+
+.app-table tbody tr:hover {
+  background: #f8fdff;
+}
+
+.app-table tbody tr.is-alert {
+  background: #fff1f2;
+}
+
+.app-table-empty {
+  text-align: center;
+  color: #64748b;
+  padding: 36px 12px;
+}
