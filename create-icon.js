@@ -1,94 +1,80 @@
 const fs = require('fs');
 
-// 创建一个简单的蓝色圆形PNG图标�?92x192�?function createIcon() {
+/** Build a simple 192x192 circular blue PNG app icon. */
+function createIcon() {
   const size = 192;
   const centerX = size / 2;
   const centerY = size / 2;
   const radius = size * 0.4;
-  
-  // PNG文件�?  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
-  
-  // IHDR chunk
+
+  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+
   const ihdrData = Buffer.alloc(13);
-  ihdrData.writeUInt32BE(size, 0);  // width
-  ihdrData.writeUInt32BE(size, 4);  // height
-  ihdrData[8] = 8;   // bit depth
-  ihdrData[9] = 6;   // color type (RGBA)
-  ihdrData[10] = 0;  // compression
-  ihdrData[11] = 0;  // filter
-  ihdrData[12] = 0;  // interlace
+  ihdrData.writeUInt32BE(size, 0);
+  ihdrData.writeUInt32BE(size, 4);
+  ihdrData[8] = 8;
+  ihdrData[9] = 6;
+  ihdrData[10] = 0;
+  ihdrData[11] = 0;
+  ihdrData[12] = 0;
   const ihdrChunk = createChunk('IHDR', ihdrData);
-  
-  // IDAT chunk - 使用简单的蓝色填充
+
   const zlib = require('zlib');
   const rawData = [];
-  
+
   for (let y = 0; y < size; y++) {
-    rawData.push(0); // filter type (none)
+    rawData.push(0);
     for (let x = 0; x < size; x++) {
       const dx = x - centerX;
       const dy = y - centerY;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      
+
       if (dist <= radius) {
-        // 蓝色
-        rawData.push(0);     // R
-        rawData.push(132);   // G
-        rawData.push(199);   // B
-        rawData.push(255);   // A
+        rawData.push(0, 132, 199, 255);
       } else {
-        // 透明
-        rawData.push(0);
-        rawData.push(0);
-        rawData.push(0);
-        rawData.push(0);
+        rawData.push(0, 0, 0, 0);
       }
     }
   }
-  
+
   const compressed = zlib.deflateSync(Buffer.from(rawData));
   const idatChunk = createChunk('IDAT', compressed);
-  
-  // IEND chunk
   const iendChunk = createChunk('IEND', Buffer.alloc(0));
-  
-  // 合并所有部�?  const png = Buffer.concat([signature, ihdrChunk, idatChunk, iendChunk]);
-  
-  return png;
+
+  return Buffer.concat([signature, ihdrChunk, idatChunk, iendChunk]);
 }
 
 function createChunk(type, data) {
   const length = Buffer.alloc(4);
   length.writeUInt32BE(data.length, 0);
-  
+
   const typeBuffer = Buffer.from(type, 'ascii');
   const crcData = Buffer.concat([typeBuffer, data]);
   const crc = crc32(crcData);
-  
+
   const crcBuffer = Buffer.alloc(4);
   crcBuffer.writeUInt32BE(crc >>> 0, 0);
-  
+
   return Buffer.concat([length, typeBuffer, data, crcBuffer]);
 }
 
 function crc32(buf) {
   let crc = -1;
   for (let i = 0; i < buf.length; i++) {
-    crc = (crc >>> 8) ^ crcTable[(crc ^ buf[i]) & 0xFF];
+    crc = (crc >>> 8) ^ crcTable[(crc ^ buf[i]) & 0xff];
   }
   return crc ^ -1;
 }
 
-// CRC32�?const crcTable = [];
+const crcTable = [];
 for (let n = 0; n < 256; n++) {
   let c = n;
   for (let k = 0; k < 8; k++) {
-    c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+    c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
   }
   crcTable.push(c);
 }
 
-// 写入图标文件
 const icon = createIcon();
 fs.writeFileSync('icon.png', icon);
-console.log('图标文件已生�? icon.png');
+console.log('Wrote icon.png');

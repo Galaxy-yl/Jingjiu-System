@@ -27,7 +27,7 @@
                 <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20">
                     <i class="fas fa-search text-sm"></i>
                 </span>
-                <h1 class="text-lg font-bold">????</h1>
+                <h1 class="text-lg font-bold">快速查询</h1>
             </div>
         </div>
     </header>
@@ -38,16 +38,16 @@
                 <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700">
                     <i class="fas fa-calendar text-sm"></i>
                 </span>
-                ???????
+                按日期查询
             </h2>
             <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                <label class="text-sm font-medium text-slate-600 shrink-0" for="queryDate">????</label>
+                <label class="text-sm font-medium text-slate-600 shrink-0" for="queryDate">查询日期</label>
                 <input type="date" id="queryDate" class="min-h-[44px] w-full sm:w-auto px-3 py-2.5 border border-slate-200 rounded-xl bg-white text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/35 focus:border-cyan-400">
                 <button type="button" id="queryButton" class="inline-flex min-h-[44px] w-full sm:w-auto items-center justify-center px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 text-white text-sm font-semibold shadow-md shadow-cyan-900/15 hover:from-cyan-500 hover:to-teal-500 transition-colors">
-                    <i class="fas fa-search mr-2"></i> ??
+                    <i class="fas fa-search mr-2"></i> 查询
                 </button>
             </div>
-            <p class="text-xs text-slate-500 mt-3">??????????????????????????</p>
+            <p class="text-xs text-slate-500 mt-3">选择日期后点击查询。当日数据来自实时接口；历史日期优先使用快照（若有）。</p>
         </div>
 
         <div id="statsContainer" class="app-panel p-4 sm:p-6 mb-5 hidden">
@@ -55,32 +55,32 @@
                 <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
                     <i class="fas fa-chart-bar text-sm"></i>
                 </span>
-                ??
+                统计概览
             </h2>
             <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
                 <div class="rounded-xl border border-slate-100 bg-slate-50/80 p-4">
-                    <p class="text-slate-500 text-xs font-medium">???????????</p>
+                    <p class="text-slate-500 text-xs font-medium">商户总数</p>
                     <p id="totalStores" class="text-xl sm:text-2xl font-bold text-slate-800 tabular-nums mt-1">0</p>
                 </div>
                 <div class="rounded-xl border border-emerald-100 bg-emerald-50/80 p-4">
-                    <p class="text-emerald-700/80 text-xs font-medium">?????</p>
+                    <p class="text-emerald-700/80 text-xs font-medium">当日已送货</p>
                     <p id="deliveredStores" class="text-xl sm:text-2xl font-bold text-emerald-600 tabular-nums mt-1">0</p>
                 </div>
                 <div class="rounded-xl border border-amber-100 bg-amber-50/80 p-4">
-                    <p class="text-amber-800/80 text-xs font-medium">???</p>
+                    <p class="text-amber-800/80 text-xs font-medium">待送货</p>
                     <p id="notDeliveredStores" class="text-xl sm:text-2xl font-bold text-amber-700 tabular-nums mt-1">0</p>
                 </div>
                 <div class="rounded-xl border border-violet-100 bg-violet-50/80 p-4">
-                    <p class="text-violet-800/80 text-xs font-medium">?????????</p>
-                    <p id="totalAmount" class="text-xl sm:text-2xl font-bold text-violet-700 tabular-nums mt-1">?0.00</p>
+                    <p class="text-violet-800/80 text-xs font-medium">当日回款合计</p>
+                    <p id="totalAmount" class="text-xl sm:text-2xl font-bold text-violet-700 tabular-nums mt-1">¥0.00</p>
                 </div>
                 <div class="rounded-xl border border-orange-100 bg-orange-50/80 p-4">
-                    <p class="text-orange-800/80 text-xs font-medium">?????</p>
+                    <p class="text-orange-800/80 text-xs font-medium">欠款户数</p>
                     <p id="owingStores" class="text-xl sm:text-2xl font-bold text-orange-600 tabular-nums mt-1">0</p>
                 </div>
                 <div class="rounded-xl border border-yellow-100 bg-yellow-50/80 p-4">
-                    <p class="text-yellow-800/80 text-xs font-medium">??????</p>
-                    <p id="owingAmount" class="text-xl sm:text-2xl font-bold text-yellow-700 tabular-nums mt-1">?0.00</p>
+                    <p class="text-yellow-800/80 text-xs font-medium">欠款金额合计</p>
+                    <p id="owingAmount" class="text-xl sm:text-2xl font-bold text-yellow-700 tabular-nums mt-1">¥0.00</p>
                 </div>
             </div>
         </div>
@@ -90,7 +90,7 @@
                 <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700">
                     <i class="fas fa-store text-sm"></i>
                 </span>
-                ????
+                商户列表
             </h2>
             <div id="storeItems" class="space-y-4"></div>
         </div>
@@ -107,7 +107,7 @@
                 return Mian1.getBestSnapshot(date);
             }
             const response = await fetch(`${API_BASE_URL}/merchants`);
-            if (!response.ok) throw new Error('????');
+            if (!response.ok) throw new Error('加载商户失败');
             return response.json();
         }
 
@@ -139,8 +139,8 @@
                 updateStats(stores, selectedDate);
                 renderStoreList(stores, selectedDate);
             } catch (error) {
-                console.error('????:', error);
-                alert('???????????????? 3000?????');
+                console.error('查询失败:', error);
+                alert('无法连接服务器。请在 backend 目录执行 npm start，并确认本页通过 http://localhost:3000 访问。');
             }
         }
 
@@ -158,9 +158,9 @@
             document.getElementById('totalStores').textContent = total;
             document.getElementById('deliveredStores').textContent = delivered;
             document.getElementById('notDeliveredStores').textContent = notDelivered;
-            document.getElementById('totalAmount').textContent = `?${amount.toFixed(2)}`;
+            document.getElementById('totalAmount').textContent = `¥${amount.toFixed(2)}`;
             document.getElementById('owingStores').textContent = owing;
-            document.getElementById('owingAmount').textContent = `?${owingAmount.toFixed(2)}`;
+            document.getElementById('owingAmount').textContent = `¥${owingAmount.toFixed(2)}`;
         }
 
         function renderStoreList(stores, date) {
@@ -171,7 +171,7 @@
                 storeItems.innerHTML = `
                     <div class="text-center py-12 text-slate-500">
                         <i class="fas fa-calendar-check text-6xl mb-4 opacity-30"></i>
-                        <p>???????????????</p>
+                        <p>该日暂无符合条件的商户记录</p>
                     </div>
                 `;
                 return;
@@ -185,18 +185,18 @@
                     <div class="flex justify-between items-start">
                         <div>
                             <h3 class="text-lg font-medium text-slate-900">${store.name}</h3>
-                            ${store.contact ? `<p class="text-slate-600 text-sm">???${store.contact} ${store.phone ? `??: ${store.phone}` : ''}</p>` : ''}
+                            ${store.contact ? `<p class="text-slate-600 text-sm">联系人：${store.contact}${store.phone ? `　电话：${store.phone}` : ''}</p>` : ''}
                             <div class="mt-2 flex gap-2 flex-wrap">
                                 ${isDeliveredDay
-                                    ? `<span class="px-2 py-1 bg-emerald-100 text-emerald-800 text-xs rounded-full">???</span>`
-                                    : `<span class="px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-full">???</span>`}
-                                ${store.isOwing ? `<span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">??</span>` : ''}
+                                    ? `<span class="px-2 py-1 bg-emerald-100 text-emerald-800 text-xs rounded-full">已送货</span>`
+                                    : `<span class="px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-full">未送货</span>`}
+                                ${store.isOwing ? `<span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">欠款</span>` : ''}
                             </div>
                         </div>
                         ${isDeliveredDay
                             ? `<div class="text-right">
-                                <p class="text-sm text-slate-500">?????${store.deliveryDate || '-'}</p>
-                                <p class="text-lg font-bold text-teal-600 tabular-nums">?${total.toFixed(2)}</p>
+                                <p class="text-sm text-slate-500">送货日期：${store.deliveryDate || '-'}</p>
+                                <p class="text-lg font-bold text-teal-600 tabular-nums">¥${total.toFixed(2)}</p>
                             </div>`
                             : ''}
                     </div>
